@@ -23,18 +23,21 @@ persistence: session
 
 37단계의 최초 routing 구현을 다시 시작하지 않는다. 41~43단계가 반영된 현재 source와
 단일 최종 HTML을 기준으로 `docs/ROUTING.md` 계약을 통합하고 회귀를 점검한다. 기존의
-재사용 가능한 semantic HTML component, 접근성, reference, current build와 독립 quality
+semantic document structure, 접근성, reference, current build와 독립 quality
 milestone gate도 함께 보존한다.
 
 산출물 `step_archive/step044_html컴포넌트화.md`는 45~50단계와의 호환을 위해 유지하는
-legacy 경로다. 이름을 바꾸지 말고 component와 routing 증거를 모두 기록한다. 이 단계의
+legacy 경로다. 이름을 바꾸지 말고 routing·구조·접근성·build 증거를 기록한다. legacy
+파일명은 HTML component 분리를 요구한다는 뜻이 아니다. 이 단계의
 내부 fixture나 정적 검사는 실제 배포 rewrite 증거가 아니며, 실제 배포 direct visit와
 refresh 검증은 45단계가 담당하고, 50단계는 현재 HTML에 결합된 최종 browser 보고서를 검증한다.
 
-## 파일 구조와 component 규칙
+## 개발 source와 최종 HTML 경계
 
 - 개발 HTML entry는 `src/index.html`에 둔다.
-- 반복 HTML은 책임, input, owned DOM과 lifecycle이 분명한 semantic component로 통합한다.
+- 화면별 DOM은 같은 HTML 안에서 서로 다른 `data-harness-screen` root와 canonical URL에
+  연결하면 충분하다. HTML을 별도 component로 추출하는 작업은 선택 사항이며 이 단계의
+  완료 조건이 아니다.
 - heading hierarchy, document order와 progressive enhancement를 보존한다.
 - 개발 source의 JS/CSS는 external JavaScript/CSS 파일로 참조하고 inline script, style
   element, style attribute를 만들지 않는다.
@@ -42,8 +45,8 @@ refresh 검증은 45단계가 담당하고, 50단계는 현재 HTML에 결합된
   `dist/index.html`과 정확히 하나의 inline
   `<script id="harness50-routes" type="application/json">` data manifest를 허용하고 검증한다.
 
-component 분리 뒤 semantic landmark, accessible label, keyboard order, visible focus, form
-state, live region, 중복 ID와 모든 asset reference를 source와 rendered DOM에서 점검한다.
+semantic landmark, accessible label, keyboard order, visible focus, form state, live region,
+중복 ID와 모든 asset reference를 source와 rendered DOM에서 점검한다.
 manifest의 정확한 build 명령이 exit code 0인지, current `dist/index.html`이 symlink가 아닌
 regular nonempty UTF-8 파일이고 `<html`/`</html>` boundary를 갖는지도 확인한다.
 
@@ -81,9 +84,9 @@ regular nonempty UTF-8 파일이고 `<html`/`</html>` boundary를 갖는지도 �
 
 ## 실행과 독립 검증
 
-가능하면 component·routing 통합 구현자와 독립 검증자를 분리한다. 구현자는 선언한
-ownership만 변경한다. 독립 검증자는 application source, legacy 보고서, milestone을
-수정하지 않고 component·accessibility·reference·build와 다섯 routing 완료 조건을 처음부터
+가능하면 라우팅 통합 구현자 역할과 milestone 독립 검증자 역할을 분리한다. 구현자는 선언한
+routing ownership만 변경한다. 독립 검증자는 application source, legacy 보고서, milestone을
+수정하지 않고 structure·accessibility·reference·build와 다섯 routing 완료 조건을 처음부터
 재검사한다. 위임할 수 없으면 한 실행자가 역할을 분리해 순서대로 수행하며 위임했다고
 기록하지 않는다.
 
@@ -94,10 +97,9 @@ legacy 보고서에 기록하고 **현재 단계에서 정지한다**. 실패 �
 
 ## 완료 조건
 
-- `html-componentization-report`: legacy 보고서에 component·routing·접근성·build 증거가 기록됐다.
+- `html-componentization-report`: 호환용 legacy 보고서에 routing·구조·접근성·build 증거가 기록됐으며 component 분리를 요구하지 않는다.
 - `review-milestone`: 모든 필수 gate 뒤 두 번째 quality milestone이 기록됐다.
 - `project-build-command`: manifest의 정확한 non-optional build가 성공했다.
-- `reusable-semantic-components`: 반복 HTML이 책임 있는 semantic component로 분리됐다.
 - `external-assets-only`: 개발 source의 JS/CSS external 정책과 final bundling·JSON data manifest가 함께 검증됐다.
 - `accessibility-reference-integrity`: 구조·label·keyboard·focus·asset reference가 유효하다.
 - `dist-html-boundary`: current build의 dist HTML이 regular·nonempty·boundary 조건을 충족한다.
@@ -111,12 +113,12 @@ legacy 보고서에 기록하고 **현재 단계에서 정지한다**. 실패 �
 
 ## Budget Forcing
 
-완료 선언 전에 빠뜨린 route, browser backend, native behavior와 component edge case가 없는지
+완료 선언 전에 빠뜨린 route, browser backend, native behavior와 구조·접근성 edge case가 없는지
 검토한다. 검토하지 않았거나 필수 증거 하나라도 누락되면 완료를 선언하지 않는다.
 
 ## Self-Calibration
 
-- component·접근성·build 요구가 모두 충족됐는가? (Y/N)
+- 구조·접근성·build 요구가 모두 충족됐는가? (Y/N)
 - 다섯 routing 완료 조건이 모두 실제 증거로 통과했는가? (Y/N)
 - 독립 검증자가 source·보고서를 수정하지 않고 같은 결론을 냈는가? (Y/N)
 

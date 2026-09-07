@@ -13,8 +13,8 @@ phase: review
 
 37단계가 만든 최초 application 구현을 다시 시작하지 않는다. 41단계 JavaScript 모듈화,
 42단계 CSS 분리와 43단계 보정을 반영한 현재 source와 단일 최종 HTML에 클라이언트 사이드
-라우팅을 통합하고 회귀를 점검한다. 선택된 architecture의 재사용 가능한 semantic
-component, accessibility, reference와 current build 계약도 함께 보존한 뒤 독립 검증으로
+라우팅을 통합하고 회귀를 점검한다. semantic document structure, accessibility,
+reference와 current build 계약도 함께 보존한 뒤 독립 검증으로
 두 번째 quality milestone을 기록한다.
 
 이 단계는 routing 통합과 milestone gate를 소유한다. 45단계의 전체 E2E와 실제 배포 경로
@@ -38,12 +38,13 @@ component, accessibility, reference와 current build 계약도 함께 보존한 
 - 시각 검토: 필요하지 않다.
 
 `step_archive/step044_html컴포넌트화.md`는 45~50단계가 참조하는 호환용 legacy 경로다.
-파일명은 바꾸지 않되 이 단계의 component와 routing 통합·회귀 증거를 모두 기록한다.
+파일명은 바꾸지 않되 이 단계의 routing·구조·접근성·build 증거를 기록한다. 이 legacy
+파일명은 HTML component 분리를 요구한다는 뜻이 아니다.
 
 ## 실행 역할
 
-가능한 경우 HTML·routing 통합 구현자 역할과 milestone 독립 검증자 역할을 서로 다른
-실행 주체에 맡긴다. 구현자는 선언된 semantic boundary와 routing ownership만 바꾸며,
+가능한 경우 라우팅 통합 구현자 역할과 milestone 독립 검증자 역할을 서로 다른 실행
+주체에 맡긴다. 구현자는 선언된 routing ownership만 바꾸며,
 독립 검증자는 산출물과 application source를 수정하지 않는다. 위임 기능을 사용할 수 없으면
 현재 실행자가 두 역할을 명확히 분리해 순서대로 수행하고, 별도 역할을 위임했다고 기록하지
 않는다. 정상 권한 확인을 유지하고 자동 승인이나 권한 우회를 금지한다.
@@ -85,20 +86,18 @@ server rewrite가 불필요한 사유와 실제 동작을 기록한다. 내부 f
 검사는 배포 rewrite 증거가 아니다. 실제 배포 환경의 direct visit와 refresh 증거는
 45단계 전체 E2E에서 수집하고, 50단계는 현재 HTML에 결합된 최종 browser 보고서를 검증한다.
 
-## 재사용 가능한 semantic component
+## 개발 source와 최종 HTML 경계
 
-30단계 설계와 41·42단계 책임 map을 기준으로 반복 HTML을 재사용 가능한 semantic
-component로 나눈다. 각 component의 책임, input, owned DOM과 lifecycle을 기록하고
-중복 markup을 단일 template 또는 render boundary로 통합한다. heading hierarchy,
-document order와 progressive enhancement를 보존한다.
+화면별 DOM은 같은 HTML 안에서 서로 다른 `data-harness-screen` root와 canonical URL에
+연결하면 충분하다. HTML을 별도 component로 추출하는 작업은 선택 사항이며 이 단계의
+완료 조건이 아니다. 기존 heading hierarchy, document order와 progressive enhancement를
+보존한다.
 
 개발 source의 JavaScript는 external JavaScript reference로, CSS는 external CSS
 reference로 유지한다. 개발 source에 inline script, style element, style attribute를
 만들지 않는다. 이 규칙은 개발 source에 한정한다. build가 만드는 self-contained
 `dist/index.html`의 최종 bundling과 `docs/ROUTING.md`가 요구하는 정확히 하나의 inline
 `<script id="harness50-routes" type="application/json">` data manifest를 금지하지 않는다.
-component 추출이 기존 event target, selector 또는 URL을 바꿀 때에는 caller와 test를 같은
-ownership unit에서 함께 갱신한다.
 
 ## 구조와 접근성 검증
 
@@ -125,8 +124,8 @@ reference 검사만으로 final routing이나 self-contained dist를 통과 처�
 
 ## 독립 milestone 검증
 
-milestone 독립 검증자는 component responsibility, external reference, rendered structure,
-accessibility, current build, `dist/index.html`과 다섯 routing 완료 조건을 처음부터 다시
+milestone 독립 검증자는 external reference, rendered structure, accessibility, current
+build, `dist/index.html`과 다섯 routing 완료 조건을 처음부터 다시
 확인한다. application source, 44단계 보고서와 milestone을 직접 수정하지 않는다. 누락,
 실행하지 않은 검사, 오래된 증거 또는 실패 결과를 `PASS`로 바꾸지 않는다.
 
@@ -135,17 +134,16 @@ build, structure, accessibility와 routing 검사가 모두 `PASS`인 뒤에만
 exit code와 원인을 보고서에 기록하고 현재 단계에서 멈춘다. 실패한 상태로 45단계에
 진행하지 않는다.
 
-legacy 경로 `step_archive/step044_html컴포넌트화.md`에는 component map, source와 rendered
-구조, reference·accessibility 결과, route/screen/URL map, backend capability와 선택,
+legacy 경로 `step_archive/step044_html컴포넌트화.md`에는 source와 rendered 구조,
+reference·accessibility 결과, route/screen/URL map, backend capability와 선택,
 traversal·native behavior·server fallback 검토, 정확한 build command·exit code, dist
 metadata와 digest, 독립 판정을 기록한다.
 
 ## 완료 조건
 
-- `html-componentization-report`: legacy 보고서에 component·routing·접근성·build 증거가 기록됐다.
+- `html-componentization-report`: 호환용 legacy 보고서에 routing·구조·접근성·build 증거가 기록됐으며 component 분리를 요구하지 않는다.
 - `review-milestone`: 모든 필수 gate 뒤 두 번째 quality milestone이 기록됐다.
 - `project-build-command`: manifest의 정확한 non-optional build가 성공했다.
-- `reusable-semantic-components`: 반복 HTML이 책임 있는 semantic component로 분리됐다.
 - `external-assets-only`: 개발 source의 JavaScript와 CSS가 external reference이며 final bundling과 JSON data manifest가 검증됐다.
 - `accessibility-reference-integrity`: 구조·label·keyboard·focus·asset reference가 유효하다.
 - `dist-html-boundary`: current build의 dist HTML이 regular·nonempty·boundary 조건을 충족한다.

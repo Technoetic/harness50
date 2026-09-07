@@ -96,7 +96,15 @@ function browserReport(digest) {
   return passingBrowserReport(digest);
 }
 
-test("Step 44 cannot complete with component evidence alone or failed routing checks", async () => {
+test("Step 44 routing evidence completes without requiring HTML component extraction", async () => {
+  const contract = await loadStepContract(repoRoot, 44);
+  const { workspaceRoot, evidence } = await materializeRepresentativeFixture(contract);
+  const routingEvidence = evidence.filter(item => item.acceptance_id !== "reusable-semantic-components");
+  const result = await validateCompletionEvidence({ contract, evidence: routingEvidence, workspaceRoot });
+  assert.deepEqual(result.missing_required, []);
+});
+
+test("Step 44 cannot complete without routing evidence or with failed routing checks", async () => {
   const contract = await loadStepContract(repoRoot, 44);
   const routeChecks = [
     "routing-screen-url-map",
@@ -106,9 +114,9 @@ test("Step 44 cannot complete with component evidence alone or failed routing ch
     "routing-native-behavior"
   ];
   const { workspaceRoot, evidence } = await materializeRepresentativeFixture(contract);
-  const componentOnly = evidence.filter(item => !routeChecks.includes(item.acceptance_id));
+  const nonRoutingEvidence = evidence.filter(item => !routeChecks.includes(item.acceptance_id));
   await assert.rejects(
-    validateCompletionEvidence({ contract, evidence: componentOnly, workspaceRoot }),
+    validateCompletionEvidence({ contract, evidence: nonRoutingEvidence, workspaceRoot }),
     error => error.code === "ACCEPTANCE_MISSING"
   );
   for (const id of routeChecks) {
