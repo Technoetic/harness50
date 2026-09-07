@@ -740,7 +740,7 @@ test("Codex manifest isolates Codex skills and hooks", async () => {
     "utf8"
   ));
   assert.equal(manifest.name, "harness50");
-  assert.equal(manifest.version, "2.2.0");
+  assert.equal(manifest.version, "2.3.0");
   assert.equal(manifest.skills, "./codex/skills/");
   assert.equal(manifest.hooks, "./codex/hooks/hooks.json");
   assert.notEqual(manifest.hooks, "./hooks/hooks.json");
@@ -931,15 +931,15 @@ test("Claude, Codex, and marketplace versions are synchronized", async () => {
   const entry = marketplace.plugins.find(plugin => plugin.name === "harness50");
 
   assert.equal(claude.name, "harness50");
-  assert.equal(claude.version, "2.2.0");
+  assert.equal(claude.version, "2.3.0");
   assert.equal(codex.name, "harness50");
-  assert.equal(codex.version, "2.2.0");
+  assert.equal(codex.version, "2.3.0");
   assert.equal(codex.skills, "./codex/skills/");
   assert.equal(codex.hooks, "./codex/hooks/hooks.json");
   assert.equal(marketplace.name, "harness50");
-  assert.equal(marketplace.metadata.version, "2.2.0");
+  assert.equal(marketplace.metadata.version, "2.3.0");
   assert.equal(entry?.source, "./");
-  assert.equal(entry?.version, "2.2.0");
+  assert.equal(entry?.version, "2.3.0");
 
   const marketplaceRoot = new URL(".claude-plugin/marketplace.json", REPO_URL);
   const pluginSource = new URL(entry.source, REPO_URL);

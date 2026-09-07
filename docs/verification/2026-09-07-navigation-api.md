@@ -1,5 +1,7 @@
 # Navigation API integration verification
 
+This packet records pre-release implementation and installation checks. Its draft-PR and local development-version status is historical; see the [v2.3.0 release](https://github.com/Technoetic/harness50/releases/tag/v2.3.0) for the published version and final release verification.
+
 - task_id: harness50-navigation-api
 - artifact_paths: `examples/routed-single-file.html`; `tests/navigation-api.test.mjs`; `scripts/verify-output.mjs`; `scripts/lib/browser-report.mjs`; `scripts/quality-gate.mjs`; browser/completion fixtures; Claude/Codex Steps 1, 30, 37, 45, 46, 50; `docs/ROUTING.md`; `docs/QUALITY.md`.
 - verification_commands_and_results: Full unit suite 1,087 tests: 1,085 passed, two platform skips, zero failures. Complete Brave browser-output suite 21/21 and new Navigation API suite 24/24 passed (45 total). Native isolated Claude regressions 45/45, forced Bash lifecycle/final gates 20/20, and native final-output checks 5/5 after the last message-only correction. Step contracts/parity 190/190; step index validator 50/50. Exact commands and scope are below.
