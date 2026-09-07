@@ -11,7 +11,8 @@ import { isAbsolute, join, relative, resolve, sep, win32 } from "node:path";
 import { HarnessError } from "./errors.mjs";
 import { sanitizeEvidence } from "./receipts.mjs";
 import { validateHtmlBytes } from "../../../scripts/lib/html-document.mjs";
-import { validateBrowserReportBytes } from "../../../scripts/lib/browser-report.mjs";
+import { readBrowserReportBytes } from "../../../scripts/lib/browser-report.mjs";
+import { readRouteManifestBytes, validateRouteManifest } from "../../../scripts/lib/route-contract.mjs";
 
 const STEP_COUNT = 50;
 const SHA256 = /^[a-f0-9]{64}$/;
@@ -422,8 +423,12 @@ async function hashStableArtifact(workspaceRoot, declaration, suppliedDigest, af
         if (handleBefore.size > BigInt(limit)) throw new Error("Artifact exceeds its content validation limit");
         const content = await handle.readFile();
         if (createHash("sha256").update(content).digest("hex") !== initialRead.digest) throw new Error("Artifact changed during content validation");
-        if (declaration.validator === "html-document") validateHtmlBytes(content);
-        else browserBindings.set(declaration.id, validateBrowserReportBytes(content));
+        if (declaration.validator === "html-document") {
+          validateHtmlBytes(content);
+          if (browserBindings?.requireRouting && declaration.path === "dist/index.html") {
+            browserBindings.htmlRoutes.set(declaration.path, readRouteManifestBytes(content));
+          }
+        } else browserBindings.reports.set(declaration.id, readBrowserReportBytes(content));
       } catch (error) {
         fail("ACCEPTANCE_ARTIFACT_CONTENT", error.message, { acceptance_id: declaration.id });
       }
@@ -556,7 +561,10 @@ export async function validateCompletionEvidence({
   }
 
   const result = [];
-  const browserBindings = new Map();
+  const browserBindings = {
+    reports: new Map(), htmlRoutes: new Map(),
+    requireRouting: contract.acceptance.some(item => item.validator === "browser-output")
+  };
   for (const item of canonical) {
     if (item.kind === "artifact" && item.ok) {
       const declaration = contract.acceptance.find(value => value.id === item.acceptance_id);
@@ -572,16 +580,20 @@ export async function validateCompletionEvidence({
       result.push(item);
     }
   }
-  for (const [acceptanceId, expectedDigest] of browserBindings) {
+  for (const [acceptanceId, report] of browserBindings.reports) {
+    const expectedDigest = report.artifact_sha256;
     const html = result.find(item => item.kind === "artifact" && item.ok && item.artifact_path === "dist/index.html");
     if (!html || html.artifact_sha256 !== expectedDigest) {
       fail("ACCEPTANCE_ARTIFACT_CONTENT", "browser report does not describe the final HTML receipt", { acceptance_id: acceptanceId });
+    }
+    if (!sameJson(browserBindings.htmlRoutes.get("dist/index.html"), validateRouteManifest(report.routing))) {
+      fail("ACCEPTANCE_ARTIFACT_CONTENT", "browser report routing does not match the stable final HTML manifest", { acceptance_id: acceptanceId });
     }
     // Bind against the same bytes retained in the receipt, and check again after
     // all artifact callbacks so a report cannot authorize a replaced final build.
     await hashStableArtifact(workspaceRoot, {
       id: acceptanceId, path: "dist/index.html", validator: "html-document"
-    }, expectedDigest);
+    }, expectedDigest, undefined, browserBindings);
   }
   return { evidence: result, missing_required: [] };
 }

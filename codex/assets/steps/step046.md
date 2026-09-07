@@ -42,6 +42,12 @@ disabled·active 같은 의미 있는 상태를 빠짐없이 조합해 `viewport
 matrix를 만든다. 적용되지 않는 조합은 application evidence와 이유를 남기며, 단순한
 시간 절약을 이유로 제외하지 않는다.
 
+각 screen에는 `docs/ROUTING.md` manifest의 canonical URL을 대응시키고 matrix에
+URL 열을 추가한다. 각 주소로 직접 진입해 URL과 보이는 화면 ID가 일치하는지 확인한
+뒤 촬영한다. 링크 이동으로만 도달한 화면은 직접 진입 검사를 대신하지 않는다.
+기본 브라우저와 앱 시작 전 Navigation API 비가용 시나리오를 matrix에서 구분해 동일한
+화면·URL·viewport 조합을 검증한다. 스크린샷만으로 실제 사용 backend를 단정하지 않는다.
+
 각 조합의 진입 전제, action, expected behavior, screenshot path와 검증 결과를 보고서
 manifest에 고정한다. primary 조합은 최종 상태를
 `step_archive/screenshots/e2e/step046-primary.png`에 저장한다.

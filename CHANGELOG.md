@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.3.0 — 2026-09-07
+
+- Require a stable URL for every independent screen while keeping a single self-contained HTML entry point. Carry the route contract through Claude and Codex design, implementation and completion steps.
+- Prefer the Navigation API on capable HTTP(S) pages, with a single History/hash backend when unavailable. Restore the initial URL, preserve ordinary links and document anchors, and retain direct-file support through an explicit hash manifest.
+- Validate deep links, reloads, traversal, active navigation and screen titles for every declared route at desktop and mobile sizes. Schema-3 evidence also requires the same checks with the Navigation API actually removed before page startup.
+- Bind completion evidence to the exact HTML and route manifest, reject incomplete compatibility reports, and preserve recovery of existing historical completion receipts.
+- Add a complete inline router example, routing and server-fallback guidance, and a combined 45-case browser regression suite covering native interception, fallback, partial capabilities, anchors, forms and new tabs.
+
+Existing apps are not migrated automatically. History paths require an HTTP(S) server fallback; direct-file use requires hash routing. Browser evidence covers Chromium/Brave and does not certify Firefox, Safari, production rewrite settings or live-model workflow completion.
+
 ## 2.2.0
 
 - Repair Windows PowerShell 5.1 parsing by shipping compatible bytes; test installed scripts without encoding repair copies.

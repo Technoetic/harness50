@@ -84,6 +84,16 @@ node "<validation-checkout>/scripts/verify-output.mjs" --workspace "<project-roo
 dist를 가리켜야 한다. `browser-output-report` 증거를 제출하면 상태 관리자가 두 화면의
 측정 결과와 현재 HTML SHA-256을 검증한다. 실패·누락·오래된 보고서는 완료할 수 없다.
 
+보고서는 schema version 3이어야 하며 HTML의 `harness50-routes` manifest와 모든
+경로의 desktop/mobile 측정값이 정확히 대응해야 한다. 기본 `viewports`와
+`compatibility.navigation_api_unavailable.viewports`가 각각 두 viewport와 모든 경로를
+포함해야 한다. 호환 시나리오는 앱 시작 전에 Navigation API를 제거하고 실행하며
+두 시나리오 모두 하나의 공통 제한 시간 안에서 통과해야 한다. 직접 접속·새로고침·실제
+링크·뒤로/앞으로·unknown fallback의 누락 또는 실패는 완료를 차단한다. 구형 보고서나
+정상 브라우저 결과만으로 대신하지 않는다. 동작 보고서만으로 native API 사용을 단정하지
+말고 Step37/45의 실제 분기 검증도 확인한다. `docs/ROUTING.md`를 기준으로 확인하며
+과거 완료 영수증의 복구는 새로운 경로 검증을 뜻하지 않는다.
+
 console 검증이 `PASS`인 뒤 project manifest에 선언된 정확한 build 명령을 정상 권한
 흐름으로 실행하고 exit code 0만 성공으로 인정한다. build가 만든 `dist/index.html`은
 symbolic link가 아닌 일반 파일이고 0바이트보다 크며, UTF-8 content에 `<html` opening과

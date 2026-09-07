@@ -85,6 +85,30 @@ step025 기획 결과를 기반으로 레이아웃 설계와 전체 설계를 su
 
 ## 설계 대안 비교 (ToT)
 
+### 화면별 URL 설계 계약
+
+플러그인의 `docs/ROUTING.md`를 읽고 전체 설계에 **화면 ID / 목적 / canonical path /
+진입 링크 / 새로고침 후 기대 화면** 표를 필수로 넣는다. 기획의 모든 독립 화면과
+일대일 대응해야 한다. 단일 HTML은 유지하고 기본은 `index.html#/orders` 같은 hash
+라우팅이다. history 모드는 `/orders` 또는 `/orders.html`을 같은 HTML로 연결하는
+배포 설정과 실제 배포 URL 검증 방법을 설계한 경우에만 선택한다.
+
+정적 manifest의 schema version 1을 유지한다. `mode`는 URL 형식이며 backend 선택과 별개다. HTTP(S)에서
+`navigation.currentEntry`가 null이 아니고 실제 `intercept` capability가 있을 때
+Navigation API를 우선 선택한다. API 이름의 존재만으로 사용 가능하다고 판단하지 않는다.
+미지원 환경은 선언한 모드에 맞는 기존 History API 또는 hash로 처리한다. 파일 직접
+열기를 지원하려면 hash manifest를 선택한다. history manifest는 HTTP(S)가 필요하며
+실행 환경에 따라 mode를 암묵 변환하지 않는다. 활성 backend는 하나만 설치하고 첫 문서
+로드는 이벤트를 기다리지 않고 현재 URL로 명시적으로 초기화한다. 앱 hash 경로의 모든 변경과 unknown fallback을
+복원한다. 수정키 클릭·다른 target·download·외부 링크·form·일반 문서 앵커는 가로채지
+않도록 경계를 설계한다. 일반 `#section`과 앱 경로 `#/orders`를 구별한다.
+
+`harness50-routes` JSON manifest, `[data-harness-screen]` 화면 루트, URL→화면 복원,
+실제 `a[href]` 이동, 뒤로·앞으로 가기, 알 수 없는 주소의 fallback을 함께 설계한다.
+제목·활성 메뉴·포커스도 전이에 맞게 갱신한다. 모드 선택 이유를 기록하고 URL 없이
+화면만 바꾸는 설계는 통과시키지 않는다. 세 대안 모두 이 계약을 만족해야 한다.
+실제 Navigation API 분기와 앱 시작 전 API를 제거한 호환 분기를 검증할 방법도 기록한다.
+
 단일 설계안을 바로 확정하지 않는다. 다음 순서로 진행한다.
 
 ### 1단계: 설계 대안 3개 생성 (에이전트 A)
@@ -146,5 +170,4 @@ step030_전체설계_chunk2.md (500줄 이하)
 ---
 
 이 지침을 완료한 즉시 자동으로 step031.md를 읽고 수행한다. 사용자 확인을 기다리지 않는다.
-
 

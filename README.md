@@ -154,6 +154,16 @@ Trust5는 폴더 존재에 점수를 주지 않습니다. 실제 테스트·린�
 
 산출물 = **단일 HTML 파일** (Helvetica Neue / 8 배수 grid / accent 1색 / radius {0,4,8,12,16} / 터치 44pt / ARIA 필수).
 
+**독립 화면마다 고유 주소를 갖습니다.** 기본은 `index.html#/orders` 같은 hash
+라우팅이며 HTML 파일은 하나로 유지합니다. 설계에서 화면별 주소를 정하고, 최종
+검사에서 모든 주소의 직접 접속·새로고침·링크 이동·뒤로/앞으로 가기를 확인합니다.
+서버 경로(`/orders`, `/orders.html`)는 같은 HTML로 연결하는 배포 설정을 갖춘
+history 모드에서 지원합니다. HTTP(S)에서는 사용 가능한 Navigation API를 우선 쓰고,
+미지원 환경에서는 기존 History API·hash 처리로 동작합니다. 파일 직접 열기는 hash를
+유지합니다. 최종 schema 3 검사는 일반 환경과 Navigation API를 강제로 제거한 환경에서
+전체 화면을 각각 검증합니다. [화면 주소 계약](docs/ROUTING.md)과
+[실행 가능한 단일 파일 예제](examples/routed-single-file.html)를 참고하세요.
+
 ---
 
 <div align="center">

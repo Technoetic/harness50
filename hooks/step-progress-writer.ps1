@@ -155,7 +155,28 @@ foreach ($s in @($progress.completed_steps)) { [void]$existing.Add([int]$s) }
 
 $completedNew = @()
 foreach ($s in $validSteps) {
-    if (-not $existing.Contains($s)) { $completedNew += $s }
+    if (-not $existing.Contains($s)) {
+        if ($totalSteps -eq 50 -and $s -eq 50) {
+            # New final completion needs current measured evidence. Inspection only:
+            # never install a browser or run project commands inside a Stop hook.
+            $finalPassed = $false
+            $inspector = Join-Path (Split-Path $PSScriptRoot -Parent) 'scripts/quality-gate.mjs'
+            if ((Test-Path -LiteralPath $inspector) -and (Get-Command node -ErrorAction SilentlyContinue)) {
+                try {
+                    $finalJson = (& node $inspector --inspect-final --workspace $projectRoot 2>$null | Out-String)
+                    if ($LASTEXITCODE -eq 0) {
+                        $finalResult = $finalJson | ConvertFrom-Json -ErrorAction Stop
+                        $finalPassed = $finalResult.verdict -eq 'PASS'
+                    }
+                } catch {}
+            }
+            if (-not $finalPassed) {
+                Write-WriterLog 'Step 50 remains incomplete: final quality/browser routing evidence missing, failed, or stale.'
+                continue
+            }
+        }
+        $completedNew += $s
+    }
 }
 
 if ($completedNew.Count -gt 0) {

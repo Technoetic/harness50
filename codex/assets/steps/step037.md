@@ -66,6 +66,29 @@ selector, 미해결 항목을 기록한다. TOPIC과 선택 문서의 digest도 
 
 ## 독립 검증
 
+화면 주소 구현도 검증한다. 플러그인 `docs/ROUTING.md`와 30단계 주소 표를 기준으로
+단일 `dist/index.html`의 실제 `<head>` 안에 `harness50-routes` JSON script 하나를
+포함한다. 각 화면 루트의 `data-harness-screen` ID와 manifest를 일대일 대응시키고
+현재 URL의 화면만 표시한다. 여러 화면이면 각 화면에 다른 선언 화면으로 가는 실제
+`a[href]` 링크가 있어야 한다. URL 변경 없는 메뉴 전이는 허용하지 않는다.
+직접 접속·새로고침·뒤로/앞으로·unknown fallback의 실패→통과 증거와 제목·활성 메뉴·
+포커스 갱신을 구현 manifest에 연결한다. 참고 구현은 `examples/routed-single-file.html`이다.
+
+HTTP(S)에서 `navigation.currentEntry`와 실제 `intercept` capability가 사용 가능하면
+Navigation API를 우선 선택한다. 미지원 환경은 선언한 hash/history URL 모드에 맞는
+기존 History API/hash backend를 사용한다. 파일 직접 열기를 지원하려면 hash manifest를
+선택한다. history manifest는 HTTP(S)가 필요하며 실행 환경에 따라 mode를 암묵 변환하지 않는다.
+backend 하나만 활성화하며 첫 문서의 URL 복원을 이벤트에 맡기지 않고 명시적으로 실행한다. 앱의 모든
+`#/...` 변경과 unknown fallback을 처리하고 실제 링크의 수정키·다른 target·download·
+외부 이동, form과 일반 `#section` 앵커는 가로채지 않는다.
+개별 navigate 이벤트의 `canIntercept`를 확인해 가로챌 수 없는 이동은 우회한다.
+
+실제 지원 브라우저의 native Navigation API 분기와 앱 시작 전 API를 제거한 강제 호환
+분기를 각각 실패→통과 테스트한다. 초기 진입·reload·Back/Forward·앱 hash 변경·unknown
+fallback 및 링크/form 우회를 포함한다. 가짜 API만 주입한 테스트는 native 분기의 증거가
+아니다. URL/화면 동작만으로 사용 API를 단정하지 말고 실제 capability와 backend 선택의
+프로젝트별 관측 증거를 구현 manifest에 연결한다.
+
 구현 독립 검증자는 TOPIC 다섯 필드, 선택된 설계 하나, 파일 소유권, 실제 test 결과,
 Class·async·접근성 계약과 screenshot-to-CSS 추적을 처음부터 확인한다. 구현이나 manifest를
 직접 고치지 않고 evidence가 빠진 항목을 `PASS`로 바꾸지 않는다.
