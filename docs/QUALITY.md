@@ -48,7 +48,26 @@ node scripts/verify-output.mjs --workspace "<project-root>"
 
 No hook installs browser packages. The verifier loads the exact `dist/index.html` bytes in fresh Chromium contexts at 1440×900 and 390×844. It blocks network dependencies and WebSockets, reports JavaScript/console errors, detects horizontal overflow, checks initial keyboard focus and runs axe WCAG A/AA checks. It records measured load timing without converting it to a Lighthouse score. The single-file output must include required styles, scripts and assets.
 
-The JSON report is `step_archive/outputs/browser-output.json`, bound to the HTML SHA-256; screenshots are `step_archive/screenshots/verified-desktop.png` and `verified-mobile.png`. Failures return exit code 1. Review axe `accessibility_incomplete` items manually. This smoke check does not exercise every application state: retain application-specific E2E, keyboard, mouse and visual review steps.
+The HTML must also contain the [screen routing contract](ROUTING.md). Every independent
+screen has a stable URL, with hash routing as the portable default. The verifier
+checks each declared route at both viewport sizes, including direct entry, reload,
+real link navigation, Back/Forward, URL-to-screen agreement and unknown-route fallback.
+Use `--executable-path "<browser-path>"` to select an installed Brave browser; each
+run uses fresh temporary browser contexts, never the user's persistent profile.
+
+The schema-v2 JSON report is `step_archive/outputs/browser-output.json`, bound to the
+HTML SHA-256 and its exact embedded route inventory. Entry screenshots are
+`step_archive/screenshots/verified-desktop.png` and `verified-mobile.png`; the report
+also contains per-route measurements. Failures return exit code 1. Review axe
+`accessibility_incomplete` items manually. Keep application-specific E2E, keyboard,
+mouse and visual review for states beyond the finite route inventory. History-mode
+fallback inside the verifier does not establish that a deployment server has rewrites.
+
+Fresh completion requires version 2 evidence. Claude's writer inspects current
+quality and browser evidence before recording a new Step 50; its final Stop quality
+report covers both. `quality-gate.mjs --inspect-final --workspace "<project-root>"`
+performs the same read-only inspection without launching browsers or project commands.
+Historical completed records and Codex receipts retain their recovery semantics.
 
 Codex completion independently validates final HTML structure and UTF-8 from the same stable handle it hashes. Submitted command results, quality reports and human inspection claims are local evidence, not signed attestations against a process that can rewrite its own project. Do not describe them as independent live-model benchmark results.
 

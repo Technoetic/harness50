@@ -40,6 +40,7 @@ argument-hint: <주제 한 줄>
    - real_world_apps: 대중 앱 사례 참고
    - constraints:
      - 단일 HTML 인터랙티브 웹 튜토리얼
+     - 독립 화면마다 고유 URL 부여, 기본 hash 라우팅, docs/ROUTING.md 계약 준수
      - AI Slop 방지 전역 제약 준수
      - 한국어 본문 + 기술 용어 영문 병기
    ```

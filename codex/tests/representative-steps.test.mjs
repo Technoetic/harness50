@@ -29,6 +29,7 @@ import {
   resumeWorkflow
 } from "../scripts/lib/workflow.mjs";
 import { runCli } from "./helpers/run-cli.mjs";
+import { completionHtml, passingBrowserReport } from "./helpers/routing.mjs";
 import {
   hashFile,
   makeDirectoryLink,
@@ -82,7 +83,7 @@ async function materializeRepresentativeFixture(contract, workspaceRoot = null) 
     const path = join(root, ...item.path.split("/"));
     await mkdir(dirname(path), { recursive: true });
     await writeFile(path, item.validator === "html-document"
-      ? '<!doctype html><html lang="en"><head><title>Fixture</title></head><body>Fixture</body></html>'
+      ? completionHtml
       : `fixture bytes for ${contract.id}/${item.id}\n`, "utf8");
   }
   for (const item of contract.acceptance.filter(value => value.validator === "browser-output")) {
@@ -92,16 +93,7 @@ async function materializeRepresentativeFixture(contract, workspaceRoot = null) 
 }
 
 function browserReport(digest) {
-  return {
-    schema_version: 1, generated_at: new Date().toISOString(), verdict: "PASS",
-    artifact_path: "dist/index.html", artifact_sha256: digest,
-    viewports: [{ name: "desktop", width: 1440, height: 900 }, { name: "mobile", width: 390, height: 844 }].map(view => ({
-      ...view, pass: true, errors: [], blocked_requests: 0, violations: [],
-      accessibility_incomplete: [], horizontal_overflow: false, visible_text_length: 7,
-      focusable_elements: 0, keyboard_focus: false,
-      screenshot: `step_archive/screenshots/verified-${view.name}.png`
-    }))
-  };
+  return passingBrowserReport(digest);
 }
 
 test("Step 50 requires a passing browser report bound to its current HTML", async () => {
@@ -111,6 +103,13 @@ test("Step 50 requires a passing browser report bound to its current HTML", asyn
   const reportPath = join(workspaceRoot, "step_archive/outputs/browser-output.json");
   const valid = JSON.parse(await readFile(reportPath, "utf8"));
   for (const mutate of [
+    report => { report.schema_version = 1; },
+    report => { delete report.routing; },
+    report => { report.viewports[0].routes = []; },
+    report => { report.viewports[1].initial_entry = false; },
+    report => { report.viewports[0].unknown_fallback = false; },
+    report => { report.viewports[0].routes[0].reload = false; },
+    report => { report.routing.routes[0].path = '/different'; for (const view of report.viewports) view.routes[0].path = '/different'; },
     report => { report.verdict = "FAIL"; },
     report => { report.viewports[0].pass = false; },
     report => { report.viewports = []; },

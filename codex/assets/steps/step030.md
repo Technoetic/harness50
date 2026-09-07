@@ -93,6 +93,16 @@ reduced-motion 대체, 터치 target과 명암 기준을 포함한다. desktop/t
 영역 배치·비율·우선순위, loading/empty/error/disabled 상태와 모든 상호작용의
 trigger, feedback, cancel, recovery를 텍스트 wireframe과 표로 명시한다.
 
+플러그인 `docs/ROUTING.md`의 화면별 URL 계약을 모든 대안과 최종 설계에 적용한다.
+전체 설계에 **화면 ID / 목적 / canonical path / 진입 링크 / 새로고침 후 기대 화면**
+표를 작성해 기획의 모든 독립 화면과 일대일 대응시킨다. 산출물은 단일 HTML이며
+기본은 `index.html#/orders` hash 라우팅이다. history 모드는 같은 HTML을 제공하는
+서버 fallback 설정과 실제 배포 URL 검증 계획이 있을 때만 선택하고 이유를 기록한다.
+`harness50-routes` JSON manifest, `[data-harness-screen]` 루트, 실제 `a[href]` 이동,
+직접 접속·새로고침·뒤로/앞으로 가기의 URL→화면 복원과 unknown-route fallback을
+설계한다. 제목·활성 메뉴·포커스 갱신을 포함하고 URL 없는 화면 전이는 허용하지 않는다.
+실제 한 화면이면 한 경로만 선언하며 불필요한 화면을 만들지 않는다.
+
 각 설계 청크는 500줄 이하이다. 첫 청크 manifest에 입력 digest, 선택 문서 digest,
 포함 diagram, 요구 추적과 줄 수를 기록한다. 선언되지 않은 추가 청크를 만들지 않는다.
 

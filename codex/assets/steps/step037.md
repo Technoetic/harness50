@@ -66,6 +66,14 @@ selector, 미해결 항목을 기록한다. TOPIC과 선택 문서의 digest도 
 
 ## 독립 검증
 
+화면 주소 구현도 검증한다. 플러그인 `docs/ROUTING.md`와 30단계 주소 표를 기준으로
+단일 `dist/index.html`의 실제 `<head>` 안에 `harness50-routes` JSON script 하나를
+포함한다. 각 화면 루트의 `data-harness-screen` ID와 manifest를 일대일 대응시키고
+현재 URL의 화면만 표시한다. 여러 화면이면 각 화면에 다른 선언 화면으로 가는 실제
+`a[href]` 링크가 있어야 한다. URL 변경 없는 메뉴 전이는 허용하지 않는다.
+직접 접속·새로고침·뒤로/앞으로·unknown fallback의 실패→통과 증거와 제목·활성 메뉴·
+포커스 갱신을 구현 manifest에 연결한다. 참고 구현은 `examples/routed-single-file.html`이다.
+
 구현 독립 검증자는 TOPIC 다섯 필드, 선택된 설계 하나, 파일 소유권, 실제 test 결과,
 Class·async·접근성 계약과 screenshot-to-CSS 추적을 처음부터 확인한다. 구현이나 manifest를
 직접 고치지 않고 evidence가 빠진 항목을 `PASS`로 바꾸지 않는다.

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Home · Workbench</title>
+  <script id="harness50-routes" type="application/json">
+    {"schema_version":1,"mode":"hash","fallback":"home","routes":[{"id":"home","path":"/"},{"id":"orders","path":"/orders"},{"id":"settings","path":"/settings"}]}
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; color: #192b34; background: #f4f7f6; font: 1rem/1.6 system-ui, sans-serif; }
+    header, main { width: min(100% - 2rem, 56rem); margin-inline: auto; }
+    header { padding-block: 1.5rem; border-bottom: 1px solid #c2cfca; }
+    .brand { margin: 0 0 1rem; font-size: 1.2rem; font-weight: 700; }
+    nav { display: flex; flex-wrap: wrap; gap: .5rem; }
+    a, button { display: inline-block; padding: .65rem 1rem; color: #124e3e; border-radius: .25rem; }
+    a[aria-current="page"], button { background: #124e3e; color: white; }
+    a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid #8b420b; outline-offset: 3px; }
+    main { padding-block: 2rem; }
+    h1 { line-height: 1.2; }
+    h1:focus { outline: none; }
+    article { padding: 1.5rem; margin-block: 1rem; background: white; border: 1px solid #c2cfca; border-radius: .5rem; }
+    ul { padding-left: 1.5rem; }
+    li { margin-block: .75rem; }
+    label { display: block; margin-block: 1rem; }
+    input { margin-right: .5rem; width: 1.25rem; height: 1.25rem; vertical-align: middle; }
+    button { border: 0; font: inherit; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="brand">Workbench</p>
+    <nav aria-label="Main navigation">
+      <a href="#/" aria-current="page">Home</a>
+      <a href="#/orders">Orders</a>
+      <a href="#/settings">Settings</a>
+    </nav>
+  </header>
+  <main>
+    <section data-harness-screen="home">
+      <h1 tabindex="-1">Your work at a glance</h1>
+      <p>Keep track of current orders and choose how this workspace works for you.</p>
+      <article><h2>Two orders are in progress</h2><p>Review their next delivery dates.</p><a href="#/orders">View orders</a></article>
+    </section>
+    <section data-harness-screen="orders" hidden>
+      <h1 tabindex="-1">Orders</h1>
+      <p>Sample orders for this demonstration.</p>
+      <ul><li>Order 1042 — Preparing for delivery</li><li>Order 1043 — Materials reserved</li></ul>
+      <a href="#/">Return to overview</a>
+    </section>
+    <section data-harness-screen="settings" hidden>
+      <h1 tabindex="-1">Settings</h1>
+      <p>Preferences in this example last until the page is reloaded.</p>
+      <label><input type="checkbox" id="compact">Use compact order spacing</label>
+      <p id="preference-status" role="status"></p>
+    </section>
+  </main>
+  <script>
+    class ScreenRouter {
+      #manifest;
+      #screens;
+      constructor(manifest, screens) { this.#manifest = manifest; this.#screens = screens; }
+      start() {
+        window.addEventListener('hashchange', () => this.render());
+        this.render();
+      }
+      render() {
+        const path = location.hash.slice(1);
+        const route = this.#manifest.routes.find(item => item.path === path)
+          ?? this.#manifest.routes.find(item => item.id === this.#manifest.fallback);
+        if (path !== route.path) history.replaceState(null, '', '#' + route.path);
+        for (const screen of this.#screens) screen.hidden = screen.dataset.harnessScreen !== route.id;
+        for (const link of document.querySelectorAll('nav a')) {
+          if (link.getAttribute('href') === '#' + route.path) link.setAttribute('aria-current', 'page');
+          else link.removeAttribute('aria-current');
+        }
+        const heading = this.#screens.find(screen => !screen.hidden).querySelector('h1');
+        document.title = heading.textContent + ' · Workbench';
+        heading.focus({ preventScroll: true });
+      }
+    }
+    const router = new ScreenRouter(JSON.parse(document.getElementById('harness50-routes').textContent),
+      [...document.querySelectorAll('[data-harness-screen]')]);
+    router.start();
+    document.getElementById('compact').addEventListener('change', event => {
+      document.querySelector('[data-harness-screen="orders"] ul').style.lineHeight = event.target.checked ? '1.2' : '';
+      document.getElementById('preference-status').textContent = event.target.checked ? 'Compact spacing enabled.' : 'Comfortable spacing enabled.';
+    });
+  </script>
+</body>
+</html>

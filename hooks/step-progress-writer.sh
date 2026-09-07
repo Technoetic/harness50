@@ -29,9 +29,11 @@ if command -v flock >/dev/null 2>&1; then
   flock -w 5 9 || { log "flock timeout"; exit 0; }
 fi
 
-export RAW PROGRESS_FILE ARCHIVED_DIR
+H50_WRITER_INSPECTOR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/scripts/quality-gate.mjs"
+if command -v cygpath >/dev/null 2>&1; then H50_WRITER_INSPECTOR="$(cygpath -m "$H50_WRITER_INSPECTOR")"; fi
+export RAW PROGRESS_FILE ARCHIVED_DIR H50_WRITER_INSPECTOR
 python3 - <<'PY'
-import json, os, re, datetime, tempfile, shutil
+import json, os, re, datetime, tempfile, shutil, subprocess
 raw=os.environ.get("RAW","")
 p_path=os.environ["PROGRESS_FILE"]
 a_dir=os.environ["ARCHIVED_DIR"]
@@ -93,6 +95,19 @@ for line in response.split("\n"):
 
 valid={n for n in found if (os.path.isfile(os.path.join(a_dir,f"step{n:03d}.md")) or os.path.isfile(os.path.join(os.path.dirname(a_dir),f"step{n:03d}.md")))}
 existing=set(int(x) for x in (progress.get("completed_steps") or []))
+if total == 50 and 50 in valid and 50 not in existing:
+    # Inspection only, with a deadline; no browser installation or project commands.
+    final_passed = False
+    try:
+        inspected = subprocess.run(
+            ["node", os.environ["H50_WRITER_INSPECTOR"], "--inspect-final", "--workspace", os.path.dirname(os.path.dirname(p_path))],
+            capture_output=True, text=True, encoding="utf-8", timeout=30)
+        final_passed = inspected.returncode == 0 and json.loads(inspected.stdout).get("verdict") == "PASS"
+    except (OSError, ValueError, subprocess.TimeoutExpired):
+        pass
+    if not final_passed:
+        valid.discard(50)
+        print("Step 50 remains incomplete: final quality/browser routing evidence missing, failed, or stale.")
 new_ones=sorted(valid - existing)
 if new_ones:
     all_done=sorted(existing | valid)

@@ -1,11 +1,22 @@
 #!/usr/bin/env node
 import { runQualityGate, inspectQualityReport } from './lib/quality.mjs';
 import { physicalWorkspace, readSafe, writeSafe } from './lib/quality-files.mjs';
+import { inspectBrowserOutput } from './lib/final-output.mjs';
+
+async function inspectFinalOutput(workspaceRoot) {
+  const [quality, browser] = await Promise.all([
+    inspectQualityReport(workspaceRoot), inspectBrowserOutput(workspaceRoot)
+  ]);
+  const passed = quality.verdict === 'PASS' && browser.verdict === 'PASS';
+  return { verdict: passed ? 'PASS' : 'INCOMPLETE', quality, browser,
+    ...(passed ? {} : { error: `Final evidence incomplete: quality=${quality.verdict}, browser=${browser.verdict}. ${quality.error ?? ''} ${browser.error ?? ''}`.trim() }) };
+}
 
 async function main() {
   const args = process.argv.slice(2);
   const hook = args.includes('--hook');
-  const inspect = hook || args.includes('--inspect');
+  const inspectFinal = args.includes('--inspect-final');
+  const inspect = hook || inspectFinal || args.includes('--inspect');
   let event = {};
   if (hook) {
     let input = '';
@@ -33,15 +44,17 @@ async function main() {
     // The final writer retains step 50; accept the exhausted cursor 51 as well.
     if (!Number.isInteger(progress.current_step) ||
         (done.length < 50 ? progress.current_step !== done.length + 1 : ![50, 51].includes(progress.current_step))) return;
-    round = done.length >= 50 ? 'r3' : done.length >= 44 ? 'r2' : 'r1';
+    round = done.length >= 49 ? 'r3' : done.length >= 44 ? 'r2' : 'r1';
   }
-  const report = inspect ? await inspectQualityReport(workspaceRoot) : await runQualityGate(workspaceRoot);
+  const final = inspectFinal || round === 'r3';
+  const report = final ? await inspectFinalOutput(workspaceRoot)
+    : inspect ? await inspectQualityReport(workspaceRoot) : await runQualityGate(workspaceRoot);
   if (hook) {
     const root = await physicalWorkspace(workspaceRoot);
-    const md = `# TRUST5 measured quality - ${round}\n\nVerdict: ${report.verdict}\n\nChecks: test, lint, typecheck, security; measured coverage >= 85%.\nNo directory-presence scores or partial credit.\n\n${report.error ?? 'All configured commands returned zero; coverage and source fingerprints verified.'}\n\nEvidence: quality-gate.json. This is local evidence, not a signed attestation.\n`;
+    const md = `# TRUST5 measured quality - ${round}\n\nVerdict: ${report.verdict}\n\nChecks: test, lint, typecheck, security; measured coverage >= 85%.${final ? ' Current HTML and schema-v2 browser routing evidence are also required.' : ''}\nNo directory-presence scores or partial credit.\n\n${report.error ?? 'All required evidence passed inspection.'}\n\nEvidence: quality-gate.json${final ? ', browser-output.json' : ''}. This is local evidence, not a signed attestation.\n`;
     await writeSafe(root, `step_archive/outputs/trust5_${round}.md`, md);
     if (report.verdict !== 'PASS' && event.stop_hook_active !== true) {
-      console.log(JSON.stringify({ decision: 'block', reason: 'Harness50 quality evidence is missing, failed or stale. Configure harness50.quality.json and explicitly run node "<plugin-root>/scripts/quality-gate.mjs" --workspace "<project-root>". Read docs/QUALITY.md. Repair failed checks before claiming this milestone complete.' }));
+      console.log(JSON.stringify({ decision: 'block', reason: 'Harness50 quality evidence is missing, failed or stale. Configure harness50.quality.json and explicitly run node "<plugin-root>/scripts/quality-gate.mjs" --workspace "<project-root>". ' + (final ? 'Also run the browser verifier for every declared route; schema-v2 browser-output.json must match the current HTML. ' : '') + 'Read docs/QUALITY.md. Repair failed checks before claiming this milestone complete.' }));
     }
     return;
   }

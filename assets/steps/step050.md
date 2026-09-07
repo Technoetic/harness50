@@ -116,6 +116,9 @@ node "<validation-checkout>/scripts/verify-output.mjs" --workspace "<project-roo
 
 브라우저 도구는 품질 안내서에 따라 별도 체크아웃에 설치하며 훅이 자동 설치하지 않는다.
 두 명령이 종료 코드 0이고 현재 dist SHA-256과 브라우저 보고서가 일치해야 한다.
+브라우저 보고서는 schema version 2이며 HTML의 `harness50-routes` manifest와 모든
+경로의 desktop/mobile 측정 결과가 일치해야 한다. 직접 접속·새로고침·실제 링크 이동·
+뒤로/앞으로·unknown fallback 중 누락 또는 실패가 있으면 완료하지 않는다.
+구형 보고서는 새 검증을 대신하지 않는다. 상세 계약은 `docs/ROUTING.md`를 따른다.
 실제 데스크톱·모바일 스크린샷도 검토한다. 누락·실패·스킵이 남으면 50/50을 보고하지 않는다.
 모든 게이트를 통과한 뒤에만 전체 완료를 보고하며 이후 다른 step 파일을 읽지 않는다.
-
