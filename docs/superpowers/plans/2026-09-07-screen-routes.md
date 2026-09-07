@@ -50,10 +50,18 @@ Files: `commands/webapp.md`, relevant `assets/steps/` and `codex/assets/steps/`,
 - [x] Run the full existing regression suite and browser suite once after integration.
 - [x] Obtain a read-only independent review and rerun task-critical commands.
 - [x] Record six-field verification and any material limitations in `docs/verification/`.
-- [ ] Commit only task files; update the user's installed local Harness50 using the
+- [x] Commit only task files; update the user's installed local Harness50 using the
   existing CLI workflow and verify installed bytes when supported.
-- [ ] Preserve D:/NS pre-existing dirty files and record the completed work in its
+- [x] Preserve D:/NS pre-existing dirty files and record the completed work in its
   existing Harness50 note without changing unrelated state.
 
 Repository baseline: `569d717`. Worktree: `D:/harness50-worktrees/screen-routes`.
 User approval is the request to reinforce the previously proposed single-HTML routing design.
+
+Delivery: functional commit `67f6c28`, draft PR #4, and Codex local build
+`2.2.0+codex.20260907024659`. An independent reader verified installed bytes and
+ran the installed dependency-free final-output inspector against actual Brave
+evidence. The existing vault note/index/log update is committed as `e55a8fe` and
+mirrored to the existing local-only backup. See the final verification packet for
+installation scope and limits. Subsequent delivery bookkeeping changes only docs;
+the installed package remains bound to functional commit `67f6c28`.

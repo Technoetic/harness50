@@ -86,3 +86,35 @@ repository's pre-existing Codex manifest layout (`hooks`, `codex/skills`, and no
 errors. No manifest layout change is part of this feature. Repository-native
 package/step tests pass; installation is verified with the installed Codex CLI
 and byte comparison rather than claiming this generic scaffold profile passed.
+
+## Local installation and delivery
+
+Functional commit `67f6c2853df5b7739b04f3c6fb3be3d68d3899d9` was pushed on
+`feat/screen-routes` and submitted as draft PR #4. It has not been merged into
+public `main` or tagged as a release.
+
+The existing personal Codex source was backed up and synchronized from that
+commit. The supported cachebuster helper changed only the local Codex manifest
+version to `2.2.0+codex.20260907024659`; `codex.cmd plugin add harness50@personal
+--json` installed it successfully. `codex.cmd plugin list --json` independently
+confirmed the new version installed and enabled. A fresh Codex conversation is
+needed to consume the updated skills. The existing GitHub-sourced Claude plugin
+remains at 2.2.0 and disabled; its installation was not changed.
+
+Independent installation verification by `/root/inspect_harness_routes` at
+2026-09-07 11:47:47 KST passed:
+
+- Personal source and Codex cache match byte-for-byte for all 241 tracked files.
+  Each matches 240 Git files exactly; the remaining manifest differs only in its
+  documented local version field. Neither directory has `node_modules`.
+- Importing `inspectBrowserOutput` from the installed cache and inspecting the
+  actual three-screen example workspace returned PASS and the expected HTML
+  SHA-256 recorded above, without installing browser dependencies in the cache.
+- The unchanged Claude cache and pre-update backup ZIP each match all 230 files
+  of baseline `569d717`.
+
+These byte comparisons bind the installation to functional commit `67f6c28`;
+later plan/spec/delivery-report bookkeeping edits are documentation only. The
+existing vault tool note, index and operational log were updated, independently
+checked against this evidence and committed locally as `e55a8fe`, then copied to
+the existing local Git mirror. No network push of vault data was performed.

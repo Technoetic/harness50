@@ -76,5 +76,5 @@ Codex step source digests and contract regression fixtures must match changed fi
 - artifact_paths: this spec; implementation plan; final verification packet
 - verification_commands_and_results: recorded after execution in the final packet
 - assumptions: user approved the previously presented design and verification scope
-- unresolved: implementation and independent review pending
-- next_safe_action: implement tests first, then runtime and generation contract
+- unresolved: no confirmed implementation or review findings; deployment-specific rewrites and live model-generated applications remain outside the completed checks
+- next_safe_action: consume the updated plugin in a fresh conversation and verify the generated application's full screen inventory; see `docs/verification/2026-09-07-screen-routes.md` for completed checks and installation evidence
