@@ -3304,14 +3304,13 @@ const EXPECTED_REVIEW_ACCEPTANCE_DESCRIPTIONS = {
     "bounded-pass-loop": "Requires an evidenced PASS within five rounds with no unresolved Critical or Important finding."
   },
   step044: {
-    "html-componentization-report": "Stores routing integration, semantic component boundaries, source reference integrity, accessibility, current build evidence, and independent review.",
-    "review-milestone": "Stores the second quality milestone only after routing, component, build, structure, and accessibility gates pass.",
+    "html-componentization-report": "Stores routing integration, semantic structure, source reference integrity, accessibility, current build evidence, and independent review without requiring HTML component extraction.",
+    "review-milestone": "Stores the second quality milestone only after routing, build, structure, and accessibility gates pass.",
     "project-build-command": "Runs the exact non-optional build script declared by the project manifest.",
-    "reusable-semantic-components": "Confirms repeated HTML is organized into reusable semantic components with explicit ownership.",
     "external-assets-only": "Confirms development JavaScript and CSS remain external while the build bundles them into one self-contained HTML with its inert route manifest.",
     "accessibility-reference-integrity": "Confirms landmarks, labels, keyboard and focus behavior, and every asset reference remain intact.",
     "dist-html-boundary": "Confirms the current build produces a regular nonempty dist/index.html with valid HTML boundaries.",
-    "independent-milestone-verifier": "Confirms a non-modifying independent verifier checks routing integration, components, build, structure, accessibility, and evidence.",
+    "independent-milestone-verifier": "Confirms a non-modifying independent verifier checks routing integration, build, structure, accessibility, and evidence.",
     "pass-only-quality-milestone": "Requires all mandatory checks to PASS before the second milestone is created.",
     "routing-screen-url-map": "Confirms the canonical route manifest, screen roots, visible screen, title, active navigation, and focus agree after source modularization.",
     "routing-deep-link-traversal": "Confirms direct entry, reload, initial restoration and unknown-route replacement for every route; real outgoing links and Back/Forward are required for multiple screens, or recorded not-applicable: single-screen.",
@@ -3335,7 +3334,7 @@ const REVIEW_ROLE_CONTRACTS = [
   { number: 41, worker: /JavaScript 모듈 구현자 역할/, verifier: /JavaScript 독립 검증자 역할/ },
   { number: 42, worker: /CSS 분리 구현자 역할/, verifier: /CSS 독립 검증자 역할/ },
   { number: 43, worker: /Awwwards 보정 구현자 역할/, verifier: /Awwwards 독립 검증자 역할/ },
-  { number: 44, worker: /HTML·routing 통합 구현자 역할/, verifier: /milestone 독립 검증자 역할/ }
+  { number: 44, worker: /라우팅 통합 구현자 역할/, verifier: /milestone 독립 검증자 역할/ }
 ];
 
 function assertReviewRoleContract(content, { worker, verifier }) {
@@ -3354,7 +3353,7 @@ const EXPECTED_REVIEW_TARGET_SHA256 = Object.freeze({
   step041: "c7062942a31f2ce520dfdcad0634082be2a21500ead63cc402fda1be6240e19d",
   step042: "a94fcec2f5371b57985e37587356aa00a866af34adaaf0c7cd9832812ad74ca0",
   step043: "41e449abf5e854c6328b1b067c7fe3a707aba4b5c9dc46cb56469ad7c6a5a191",
-  step044: "ee91c343b0a3ca4bcda6fa7f616346aa0775d10b1c475e4f5a38e2df1fe77973"
+  step044: "4adf8a1bb764403eb4ab35a361e2ccf814ada0c6a73873e53a7fe3a25a6454bf"
 });
 
 async function assertReviewTargetDigests(root) {
@@ -3597,7 +3596,7 @@ const EXPECTED_REVIEW_ROWS = [
     phase: "review",
     source: "assets/steps/step044.md",
     target: "codex/assets/steps/step044.md",
-    source_sha256: "9a9fa767568b35b6d031371a65391ccad0dbbbbc0db85bfb614f40e62ff39b2e",
+    source_sha256: "d2bd61caf470c1eef2e079447bb5d6e6697dc9362efa168cdd0847115f6fb8e8",
     inputs: [
       "step_archive/step030_레이아웃설계_chunk1.md",
       "step_archive/step030_전체설계_chunk1.md",
@@ -3621,7 +3620,6 @@ const EXPECTED_REVIEW_ROWS = [
       { id: "html-componentization-report", kind: "artifact", required: true, path: "step_archive/step044_html컴포넌트화.md" },
       { id: "review-milestone", kind: "artifact", required: true, path: "step_archive/outputs/trust5_r2.md" },
       { id: "project-build-command", kind: "command", required: true, command_pattern: REVIEW_BUILD_COMMAND_PATTERN },
-      { id: "reusable-semantic-components", kind: "check", required: true },
       { id: "external-assets-only", kind: "check", required: true },
       { id: "accessibility-reference-integrity", kind: "check", required: true },
       { id: "dist-html-boundary", kind: "check", required: true },
@@ -3659,7 +3657,7 @@ test("review source hashes bind reviewed source steps 039 through 044", async ()
     step041: "2357510e073c36067abf733cbea223afa0e8cd55415e6d5e5815725d5127432b",
     step042: "7f86d04d8afaf23759534c13826dfc9f172d3e3d477de8da836e6ea1d9f97700",
     step043: "ad1b240aae860a79b69f28521c0fbc195fda7d2d0142cfd2d5e604095dbaab4b",
-    step044: "9a9fa767568b35b6d031371a65391ccad0dbbbbc0db85bfb614f40e62ff39b2e"
+    step044: "d2bd61caf470c1eef2e079447bb5d6e6697dc9362efa168cdd0847115f6fb8e8"
   });
 });
 
@@ -3995,18 +3993,17 @@ function assertStep44Contract(content) {
     "입력과 산출물",
     "실행 역할",
     "routing 통합과 회귀 범위",
-    "재사용 가능한 semantic component",
+    "개발 source와 최종 HTML 경계",
     "구조와 접근성 검증",
     "현재 build 검증",
     "독립 milestone 검증",
     "완료 조건"
   ]);
-  const components = sections["재사용 가능한 semantic component"].replace(/\s+/g, " ");
+  const sourceBoundary = sections["개발 source와 최종 HTML 경계"].replace(/\s+/g, " ");
   const structure = sections["구조와 접근성 검증"].replace(/\s+/g, " ");
   const build = sections["현재 build 검증"].replace(/\s+/g, " ");
   const milestone = sections["독립 milestone 검증"].replace(/\s+/g, " ");
-  assert.match(components, /재사용 가능한 semantic component[^]*책임[^]*중복/i);
-  assert.match(components, /external JavaScript[^]*external CSS[^]*inline script[^]*style element[^]*style attribute/i);
+  assert.match(sourceBoundary, /external JavaScript[^]*external CSS[^]*inline script[^]*style element[^]*style attribute/i);
   assert.match(structure, /landmark[^]*label[^]*keyboard[^]*focus[^]*asset reference/i);
   assert.match(build, /project manifest[^]*정확한 build 명령[^]*exit code 0/i);
   assert.match(build, /dist\/index\.html[^]*일반 파일[^]*0바이트보다 크[^]*<html[^]*<\/html>/i);
@@ -4030,7 +4027,7 @@ test("steps041 and 042 preserve class async and CSS separation contracts through
   assertStep42Contract(step42);
 });
 
-test("step044 integrates routing and components before structure accessibility build and milestone gates", async () => {
+test("step044 integrates routing before structure accessibility build and milestone gates", async () => {
   const content = await readFile(join(repoRoot, "codex", "assets", "steps", "step044.md"), "utf8");
   assertStep44Contract(content);
 });

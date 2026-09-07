@@ -1,6 +1,12 @@
 # Changelog
 
-## 2.3.1 — 2026-09-07
+## 2.3.2 — 2026-09-07
+
+- Make Step 44 a client-side routing checkpoint without requiring HTML component extraction. A single HTML can contain the routed screen regions directly.
+- Remove the componentization completion check from Claude and Codex, and retain routing, semantic structure, accessibility and current-build checks. Keep all 50 steps.
+- Keep the legacy report path and artifact ID solely for downstream compatibility; their names do not impose a componentization requirement.
+
+## 2.3.1 — 2026-09-07 (unreleased preparation)
 
 - Rename Step 44 to **클라이언트 사이드 라우팅** in Claude, Codex and the step index, keeping the workflow at exactly 50 steps.
 - Make routing integration after source modularization an explicit Step 44 responsibility. Require evidence for the screen/URL map, deep links and traversal, Navigation API and History/hash backends, mode-specific fallback configuration, and native browser behavior before the second quality milestone.
