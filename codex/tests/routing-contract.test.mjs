@@ -29,6 +29,28 @@ test('fresh completion rejects a historical v1 browser report', async () => {
   await assert.rejects(completion(completionHtml, report => { report.schema_version = 1; }), error => error.code === 'ACCEPTANCE_ARTIFACT_CONTENT');
 });
 
+test('fresh completion rejects a historical v2 report without measured compatibility', async () => {
+  await assert.rejects(completion(completionHtml, report => { report.schema_version = 2; }), error => error.code === 'ACCEPTANCE_ARTIFACT_CONTENT');
+});
+
+test('fresh completion requires complete, unique and API-absent compatibility measurements', async () => {
+  await completion();
+  for (const mutate of [
+    report => { delete report.compatibility; },
+    report => { report.compatibility.navigation_api_unavailable = null; },
+    report => { report.compatibility.navigation_api_unavailable.viewports.pop(); },
+    report => { report.compatibility.navigation_api_unavailable.viewports[1] = report.compatibility.navigation_api_unavailable.viewports[0]; },
+    report => { report.compatibility.navigation_api_unavailable.viewports[0].routes = []; },
+    report => { report.compatibility.navigation_api_unavailable.viewports[0].routes.push(report.compatibility.navigation_api_unavailable.viewports[0].routes[0]); },
+    report => { report.compatibility.navigation_api_unavailable.viewports[0].routes[0].reload = false; },
+    report => { report.compatibility.navigation_api_unavailable.viewports[0].navigation_api.available = true; },
+    report => { report.compatibility.navigation_api_unavailable.viewports[0].routes[0].navigation_api.property_present = true; },
+    report => { delete report.compatibility.navigation_api_unavailable.viewports[0].routes[0].navigation_api; },
+    report => { report.compatibility.navigation_api_unavailable.viewports[0].screenshot = 'step_archive/screenshots/verified-desktop.png'; },
+    report => { report.viewports[0].navigation_api.available = 'true'; }
+  ]) await assert.rejects(completion(completionHtml, mutate), error => error.code === 'ACCEPTANCE_ARTIFACT_CONTENT');
+});
+
 test('fresh completion accepts exact route coverage and rejects incomplete, duplicate or different route reports', async () => {
   await completion();
   for (const mutate of [

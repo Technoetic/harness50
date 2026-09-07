@@ -29,6 +29,11 @@ persistence: session
 - **화면 주소 기본 계약**: 단일 HTML 안에서도 독립 화면마다 고유 URL을 부여한다.
   기본은 hash 라우팅이다. 플러그인의 `docs/ROUTING.md`를 참조하고 이 계약을
   기획·설계·구현·E2E에 전달한다. 실제 단일 화면이면 하나만 선언하며 화면을 발명하지 않는다.
+  URL 형식과 구현 backend를 구분한다. HTTP(S)에서 실제 사용 가능한 Navigation API를
+  우선 선택하고 미지원 환경은 선언한 URL 모드에 맞는 기존 History API/hash로 처리한다.
+  파일 직접 열기를 지원하려면 hash manifest를 선택한다. history manifest는 HTTP(S)가
+  필요하며 실행 환경에 따라 mode를 암묵 변환하지 않는다. 정상 브라우저와 API 비가용
+  환경 모두 검증한다.
 
 **`step_archive/TOPIC/TOPIC.md`** 파일을 다음 형식으로 작성한다 (이미 있으면 덮어쓴다):
 

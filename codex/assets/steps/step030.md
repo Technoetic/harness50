@@ -98,10 +98,20 @@ trigger, feedback, cancel, recovery를 텍스트 wireframe과 표로 명시한�
 표를 작성해 기획의 모든 독립 화면과 일대일 대응시킨다. 산출물은 단일 HTML이며
 기본은 `index.html#/orders` hash 라우팅이다. history 모드는 같은 HTML을 제공하는
 서버 fallback 설정과 실제 배포 URL 검증 계획이 있을 때만 선택하고 이유를 기록한다.
+정적 manifest의 schema version 1과 URL 형식인 `mode`를 유지한다. HTTP(S)에서 `navigation.currentEntry`가
+null이 아니고 실제 `intercept` capability가 있을 때 Navigation API를 우선 선택하며
+API 이름의 존재만으로 판단하지 않는다. 미지원 환경은 선언 모드에 맞는 기존 History
+API/hash를 사용한다. 파일 직접 열기를 지원하려면 hash manifest를 선택한다.
+history manifest는 HTTP(S)가 필요하며 실행 환경에 따라 mode를 암묵 변환하지 않는다.
+backend는 하나만 설치하며 첫 문서 로드는 이벤트를 기다리지 않고 현재 URL로 초기화한다.
+앱 hash 경로의 모든 변경과
+unknown fallback 복원, 수정키 클릭·다른 target·download·외부 링크·form·일반 문서
+앵커 우회를 설계한다. 일반 `#section`과 앱 경로 `#/orders`를 구별한다.
 `harness50-routes` JSON manifest, `[data-harness-screen]` 루트, 실제 `a[href]` 이동,
 직접 접속·새로고침·뒤로/앞으로 가기의 URL→화면 복원과 unknown-route fallback을
 설계한다. 제목·활성 메뉴·포커스 갱신을 포함하고 URL 없는 화면 전이는 허용하지 않는다.
 실제 한 화면이면 한 경로만 선언하며 불필요한 화면을 만들지 않는다.
+실제 Navigation API 분기와 앱 시작 전 API를 제거한 호환 분기를 검증할 방법도 기록한다.
 
 각 설계 청크는 500줄 이하이다. 첫 청크 manifest에 입력 digest, 선택 문서 digest,
 포함 diagram, 요구 추적과 줄 수를 기록한다. 선언되지 않은 추가 청크를 만들지 않는다.

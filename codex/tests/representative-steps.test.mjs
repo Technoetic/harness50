@@ -104,6 +104,7 @@ test("Step 50 requires a passing browser report bound to its current HTML", asyn
   const valid = JSON.parse(await readFile(reportPath, "utf8"));
   for (const mutate of [
     report => { report.schema_version = 1; },
+    report => { report.schema_version = 2; },
     report => { delete report.routing; },
     report => { report.viewports[0].routes = []; },
     report => { report.viewports[1].initial_entry = false; },

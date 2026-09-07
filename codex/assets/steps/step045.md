@@ -56,6 +56,16 @@ topic, design, built application과 실제 user flow를 읽고 성공 흐름, �
 직접 접속·새로고침·실제 링크 이동·뒤로/앞으로·unknown fallback마다 URL과 보이는
 `data-harness-screen` ID를 함께 단언한다. 주소 없는 화면 전이 또는 주소만 바뀌는
 구현은 실패다. 한 화면인 경우 이동만 해당 없음으로 기록하고 나머지 검사는 실행한다.
+기본 브라우저와 앱 시작 전에 Navigation API를 제거한 환경에서 동일한 전체 경로를
+검사한다. 실제 지원 HTTP(S) 브라우저의 native 분기와 강제 호환 분기의 실행 증거를
+모두 남긴다. 가짜 API만 주입한 테스트는 native 증거가 아니며 URL/화면 동작만으로
+사용 API를 단정하지 않는다. 실제 capability와 backend 선택의 프로젝트별 관측도 기록한다.
+두 환경에서 cold bootstrap·앱 hash 변경·unknown fallback·수정키/다른 target/download/
+외부 링크/form/일반 문서 앵커 우회를 검증한다. schema version 3 보고서의 기본
+`viewports`와 `compatibility.navigation_api_unavailable.viewports`가 각각 desktop/mobile의
+모든 경로를 포함해야 하며 두 시나리오를 동일한 공통 검사 제한 시간 안에서 실행한다.
+파일 직접 열기 지원은 hash manifest로 검증한다. history manifest는 HTTP(S)가 필요하며
+실행 환경에 따라 mode를 암묵 변환해 테스트하지 않는다.
 history 모드는 실제 배포 서버의 직접 접속·새로고침 증거도 필요하며 검사기 내부
 fallback은 배포 설정의 증거가 아니다. 제목·활성 메뉴·포커스 전이도 E2E로 확인한다.
 

@@ -8,16 +8,19 @@ export const completionHtml = `<!doctype html><html lang="en"><head><title>Fixtu
 
 export function passingBrowserReport(digest, manifest = singleRouteManifest) {
   const metrics = { errors: [], blocked_requests: 0, violations: [], accessibility_incomplete: [], horizontal_overflow: false, visible_text_length: 7, focusable_elements: 0 };
-  return {
-    schema_version: 2, generated_at: new Date().toISOString(), verdict: 'PASS',
-    artifact_path: 'dist/index.html', artifact_sha256: digest, routing: structuredClone(manifest),
-    viewports: [{ name: 'desktop', width: 1440, height: 900 }, { name: 'mobile', width: 390, height: 844 }].map(view => ({
+  const viewports = absent => [{ name: 'desktop', width: 1440, height: 900 }, { name: 'mobile', width: 390, height: 844 }].map(view => ({
       ...view, ...structuredClone(metrics), pass: true, keyboard_focus: false,
-      screenshot: `step_archive/screenshots/verified-${view.name}.png`, initial_entry: true, unknown_fallback: true,
+      navigation_api: { available: !absent, property_present: !absent },
+      screenshot: `step_archive/screenshots/verified-${absent ? 'navigation-api-unavailable-' : ''}${view.name}.png`, initial_entry: true, unknown_fallback: true,
       routes: manifest.routes.map((route, index) => ({ ...route, ...structuredClone(metrics), pass: true, direct_entry: true, reload: true,
+        navigation_api: { available: !absent, property_present: !absent },
         navigation: manifest.routes.length === 1 ? { status: 'not-applicable', reason: 'single-screen' }
           : { status: 'pass', target_id: manifest.routes[(index + 1) % manifest.routes.length].id, back: true, forward: true }
       }))
-    }))
+    }));
+  return {
+    schema_version: 3, generated_at: new Date().toISOString(), verdict: 'PASS',
+    artifact_path: 'dist/index.html', artifact_sha256: digest, routing: structuredClone(manifest),
+    viewports: viewports(false), compatibility: { navigation_api_unavailable: { viewports: viewports(true) } }
   };
 }

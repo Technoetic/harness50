@@ -52,18 +52,26 @@ The HTML must also contain the [screen routing contract](ROUTING.md). Every inde
 screen has a stable URL, with hash routing as the portable default. The verifier
 checks each declared route at both viewport sizes, including direct entry, reload,
 real link navigation, Back/Forward, URL-to-screen agreement and unknown-route fallback.
+It repeats the complete checks with the Navigation API forcibly removed before
+application startup, so an application that only works with the new API fails.
 Use `--executable-path "<browser-path>"` to select an installed Brave browser; each
 run uses fresh temporary browser contexts, never the user's persistent profile.
 
-The schema-v2 JSON report is `step_archive/outputs/browser-output.json`, bound to the
+The schema-v3 JSON report is `step_archive/outputs/browser-output.json`, bound to the
 HTML SHA-256 and its exact embedded route inventory. Entry screenshots are
 `step_archive/screenshots/verified-desktop.png` and `verified-mobile.png`; the report
-also contains per-route measurements. Failures return exit code 1. Review axe
+also contains per-route measurements. The mandatory
+`compatibility.navigation_api_unavailable.viewports` repeats the desktop/mobile
+evidence; its screenshots use `verified-navigation-api-unavailable-desktop.png`
+and `verified-navigation-api-unavailable-mobile.png` in the same directory. Both
+scenarios share one deadline and the same network restrictions. Observed API
+capability is diagnostic; project E2E must separately demonstrate native backend
+use when supported. Failures return exit code 1. Review axe
 `accessibility_incomplete` items manually. Keep application-specific E2E, keyboard,
 mouse and visual review for states beyond the finite route inventory. History-mode
 fallback inside the verifier does not establish that a deployment server has rewrites.
 
-Fresh completion requires version 2 evidence. Claude's writer inspects current
+Fresh completion requires version 3 evidence with both scenarios. Claude's writer inspects current
 quality and browser evidence before recording a new Step 50; its final Stop quality
 report covers both. `quality-gate.mjs --inspect-final --workspace "<project-root>"`
 performs the same read-only inspection without launching browsers or project commands.

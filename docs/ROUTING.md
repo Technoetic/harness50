@@ -10,6 +10,39 @@ file. History routing can use `/orders` or `/orders.html`, but the deployment se
 must serve the same HTML for those navigation paths. Changing a URL must also
 change the visible screen; changing a screen must update the URL.
 
+## Navigation API with a compatible router
+
+The URL mode and the browser API are separate choices. Keep the manifest's static
+`hash` or `history` mode. On HTTP(S), prefer the Navigation API when its navigation
+methods (`navigate` and `addEventListener`), a non-null `currentEntry`, and
+`NavigateEvent.prototype.intercept` are
+usable. Otherwise use the existing History API or hash handling for that URL mode.
+The presence of `window.navigation` alone is insufficient. Use the default hash
+manifest for direct-file operation; a history manifest requires HTTP(S) hosting.
+Do not silently change the declared URL mode or use virtual file paths.
+
+Install exactly one backend. The native backend listens for `navigate` and checks
+`canIntercept` for each event. The fallback backend handles ordinary app links and
+`popstate`/`hashchange` as appropriate. Both explicitly render the initial URL,
+since the first document load does not emit a `navigate` event. Both restore the
+correct screen for history traversal and canonicalize unknown app routes with a
+replacement, including an unknown `#/...` hash reached in the running app.
+
+Handle only app navigation. Preserve modified clicks, new-tab targets, downloads,
+external links, form submissions and ordinary `#section` anchors. App hashes use
+the `#/...` namespace. Keep title, active-link semantics, focus and scroll behavior
+consistent without duplicate renders or extra history entries. If rendering loads
+data asynchronously, consume the navigation event's abort signal and prevent an
+abandoned navigation from overwriting the current screen.
+
+The single-file example implements this capability selection with a hash manifest.
+For a deployed history variant, change the manifest mode and its route link hrefs
+together, and configure the server to return the same HTML for the declared paths.
+Navigation API support does not supply that deployment fallback.
+
+See the [browser API guide](https://developer.chrome.com/docs/web-platform/navigation-api)
+and [opaque-origin restrictions in the HTML standard](https://html.spec.whatwg.org/multipage/nav-history-apis.html#navigation-api-entries-and-events-disabled).
+
 ## Design and markup
 
 Inventory independent screens during planning. In Step 30, record each screen's
@@ -105,18 +138,35 @@ To select an installed browser explicitly, including Brave on Windows:
 node "<validation-checkout>/scripts/verify-output.mjs" --workspace "<project-root>" --executable-path "C:/Users/corei/AppData/Local/BraveSoftware/Brave-Browser/Application/brave.exe"
 ```
 
-The browser report uses **schema version 2**, with the exact `routing` manifest,
-the final HTML SHA-256, and desktop/mobile results. Every route is checked for:
+The browser report uses **schema version 3**, with the exact `routing` manifest,
+the final HTML SHA-256, and desktop/mobile results in two mandatory scenarios:
+an untouched browser and a browser with the Navigation API removed before app
+startup. Every route in each scenario is checked for:
 
 1. Cold direct entry and visible-screen/URL agreement.
 2. Reload restoring the same route and screen.
 3. A real outgoing link, its destination screen, Back, and Forward.
 4. Runtime/console/network errors, accessibility and horizontal overflow.
 
+Normal results are in `viewports`. Forced-fallback results are in
+`compatibility.navigation_api_unavailable.viewports`; they contain the same exact
+route inventory and viewport measurements. The verifier removes the API before
+each document loads, confirms its absence throughout route checks, and fails if
+it cannot establish that condition. Screenshots for this scenario use
+`verified-navigation-api-unavailable-desktop.png` and
+`verified-navigation-api-unavailable-mobile.png` in `step_archive/screenshots/`.
+Both scenarios share the existing overall deadline and network restrictions.
+
+`navigation_api.available` and `navigation_api.property_present` report observed
+capability, not proof that an application used the native backend. Step 45 must
+also demonstrate native interception in a capable browser, as well as correct
+behavior when the API is missing or present but unusable. The shipped router has
+real-browser regression coverage for these cases and for direct `file://` use.
+
 Initial entry and an unknown route must both resolve to the declared fallback.
 One-screen apps explicitly record navigation as `not-applicable` with reason
 `single-screen`; direct entry, reload, fallback and quality checks still run.
-Failures, omitted routes, duplicate results, old reports and changed HTML cannot
+Failures in either scenario, omitted routes, duplicate results, old reports and changed HTML cannot
 satisfy fresh completion. Existing historical receipts retain their recovery
 semantics; replaying a receipt does not perform a new browser verification.
 

@@ -34,7 +34,7 @@ test('Chromium validates a working document at desktop and mobile sizes', async 
   assert.equal(report.viewports.length, 2);
   for (const viewport of report.viewports) assert.ok((await readFile(join(root, viewport.screenshot))).length > 100);
   assert.match(report.artifact_sha256, /^[a-f0-9]{64}$/);
-  assert.equal(report.schema_version, 2);
+  assert.equal(report.schema_version, 3);
   assert.equal(report.viewports[0].routes[0].navigation.status, 'not-applicable');
 });
 
@@ -77,6 +77,7 @@ async function routingFixture(mode = 'hash', fault = '') {
   const screens = manifest.routes.map((route, index) => `<section data-harness-screen="${route.id}" hidden><h2>${route.id}</h2><p>Independent ${route.id} screen.</p><a href="${href(manifest.routes[(index + 1) % 3].path)}">Next screen</a>${fault === 'route-errors' && route.id === 'orders' ? '<button></button><p style="width:2000px">Orders overflow</p>' : ''}</section>`).join('');
   const app = `<script>
     const routes=${JSON.stringify(manifest.routes)}, mode=${JSON.stringify(mode)}, fault=${JSON.stringify(fault)};
+    if(fault==='restore-api-on-reload'&&!('navigation' in window)&&performance.getEntriesByType('navigation')[0]?.type==='reload')Object.defineProperty(window,'navigation',{value:undefined});
     function path(){return mode==='hash'?location.hash.slice(1):location.pathname}
     function href(path){return mode==='hash'?'#'+path:path}
     function show(route){document.querySelectorAll('[data-harness-screen]').forEach(el=>el.hidden=el.dataset.harnessScreen!==route.id);document.title=route.id}
@@ -89,7 +90,7 @@ async function routingFixture(mode = 'hash', fault = '') {
       if(fault==='route-errors'&&route.id==='orders'){console.error('orders only');fetch('https://example.invalid/orders')}
     }
     addEventListener(mode==='hash'?'hashchange':'popstate',()=>{if(fault!=='history')render()});
-    document.addEventListener('click',event=>{const link=event.target.closest('a[href]');if(!link)return;event.preventDefault();const target=routes.find(route=>href(route.path)===link.getAttribute('href'));if(fault!=='url-less')history.pushState(null,'',href(target.path));show(target)});
+    document.addEventListener('click',event=>{const link=event.target.closest('a[href]');if(!link)return;event.preventDefault();const target=routes.find(route=>href(route.path)===link.getAttribute('href'));if(fault!=='url-less'&&!(fault==='fallback-url-less'&&!('navigation' in window)))history.pushState(null,'',href(target.path));show(target)});
     render(true);
   </script>`;
   let html = document(screens, { routed: false }).replace('</head>', `${routeManifestScript(manifest)}</head>`).replace('</body>', `${app}</body>`);
@@ -106,11 +107,44 @@ for (const mode of ['hash', 'history']) test(`${mode} routing verifies cold entr
   const root = await routingFixture(mode);
   const report = await verifyOutput(root, browserOptions);
   assert.equal(report.verdict,'PASS',JSON.stringify(report));
-  assert.equal(report.schema_version,2);
-  for(const view of report.viewports){
+  assert.equal(report.schema_version,3);
+  const fallbackViews=report.compatibility.navigation_api_unavailable.viewports;
+  assert.equal(fallbackViews.length,2);
+  for(const view of [...report.viewports,...fallbackViews]){
     assert.deepEqual(view.routes.map(route=>route.id),['home','orders','settings']);
     assert.equal(view.initial_entry,true);assert.equal(view.unknown_fallback,true);
     for(const route of view.routes){assert.equal(route.direct_entry,true);assert.equal(route.reload,true);assert.equal(route.navigation.status,'pass');assert.equal(route.navigation.back,true);assert.equal(route.navigation.forward,true);}
+  }
+  for(const view of fallbackViews){
+    assert.deepEqual(view.navigation_api,{available:false,property_present:false});
+    assert.equal(view.screenshot,`step_archive/screenshots/verified-navigation-api-unavailable-${view.name}.png`);
+    assert.ok((await readFile(join(root,view.screenshot))).length>100);
+    for(const route of view.routes)assert.deepEqual(route.navigation_api,{available:false,property_present:false});
+  }
+});
+
+test('a native-capable app with broken unavailable-API fallback cannot pass verification',async()=>{
+  const report=await verifyOutput(await routingFixture('history','fallback-url-less'),browserOptions);
+  assert.equal(report.verdict,'FAIL',JSON.stringify(report));
+  assert.equal(report.viewports.length,2);
+  assert.ok(report.viewports.every(view=>view.pass&&view.navigation_api.available));
+  assert.match(report.error,/navigation|screen/i);
+});
+
+test('API absence is rechecked after reload even when the property value is undefined',async()=>{
+  const report=await verifyOutput(await routingFixture('history','restore-api-on-reload'),browserOptions);
+  assert.equal(report.verdict,'FAIL',JSON.stringify(report));
+  assert.equal(report.viewports.length,2);
+  assert.ok(report.viewports.every(view=>view.pass));
+  assert.match(report.error,/absence could not be verified/);
+});
+
+test('a partial native Navigation API is reported as present but unavailable',async()=>{
+  for(const partial of ['{navigate(){},addEventListener(){},currentEntry:null}','{navigate(){},currentEntry:{}}']){
+    const root=await fixture(`<script>if("navigation" in window)Object.defineProperty(window,"navigation",{value:${partial}})</script>`);
+    const report=await verifyOutput(root,browserOptions);
+    assert.equal(report.verdict,'PASS',JSON.stringify(report));
+    for(const view of report.viewports)assert.deepEqual(view.navigation_api,{available:false,property_present:true});
   }
 });
 

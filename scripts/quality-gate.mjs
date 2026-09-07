@@ -51,10 +51,10 @@ async function main() {
     : inspect ? await inspectQualityReport(workspaceRoot) : await runQualityGate(workspaceRoot);
   if (hook) {
     const root = await physicalWorkspace(workspaceRoot);
-    const md = `# TRUST5 measured quality - ${round}\n\nVerdict: ${report.verdict}\n\nChecks: test, lint, typecheck, security; measured coverage >= 85%.${final ? ' Current HTML and schema-v2 browser routing evidence are also required.' : ''}\nNo directory-presence scores or partial credit.\n\n${report.error ?? 'All required evidence passed inspection.'}\n\nEvidence: quality-gate.json${final ? ', browser-output.json' : ''}. This is local evidence, not a signed attestation.\n`;
+    const md = `# TRUST5 measured quality - ${round}\n\nVerdict: ${report.verdict}\n\nChecks: test, lint, typecheck, security; measured coverage >= 85%.${final ? ' Current HTML and schema-v3 browser routing evidence for normal and Navigation-API-unavailable scenarios are also required.' : ''}\nNo directory-presence scores or partial credit.\n\n${report.error ?? 'All required evidence passed inspection.'}\n\nEvidence: quality-gate.json${final ? ', browser-output.json' : ''}. This is local evidence, not a signed attestation.\n`;
     await writeSafe(root, `step_archive/outputs/trust5_${round}.md`, md);
     if (report.verdict !== 'PASS' && event.stop_hook_active !== true) {
-      console.log(JSON.stringify({ decision: 'block', reason: 'Harness50 quality evidence is missing, failed or stale. Configure harness50.quality.json and explicitly run node "<plugin-root>/scripts/quality-gate.mjs" --workspace "<project-root>". ' + (final ? 'Also run the browser verifier for every declared route; schema-v2 browser-output.json must match the current HTML. ' : '') + 'Read docs/QUALITY.md. Repair failed checks before claiming this milestone complete.' }));
+      console.log(JSON.stringify({ decision: 'block', reason: 'Harness50 quality evidence is missing, failed or stale. Configure harness50.quality.json and explicitly run node "<plugin-root>/scripts/quality-gate.mjs" --workspace "<project-root>". ' + (final ? 'Also run the browser verifier for every declared route in normal and Navigation-API-unavailable scenarios; schema-v3 browser-output.json must match the current HTML. ' : '') + 'Read docs/QUALITY.md. Repair failed checks before claiming this milestone complete.' }));
     }
     return;
   }

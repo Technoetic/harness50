@@ -40,6 +40,17 @@ mobile에서 각 URL 직접 접속·새로고침, 실제 링크 이동, 뒤로/�
 주소 fallback을 검증하고 매번 주소와 보이는 화면 ID를 함께 단언한다. 화면만 바뀌거나
 주소만 바뀌는 구현은 실패다. 여러 화면일 때 이동 검사를 생략하지 않는다. 한 화면은
 이동만 해당 없음으로 기록하며 직접 접속·새로고침·fallback은 계속 검사한다.
+기본 브라우저와 앱 시작 전에 Navigation API를 제거한 환경에서 동일한 전체 경로를
+검사한다. 실제 지원 HTTP(S) 브라우저의 native Navigation API 분기와 강제 호환 분기
+실행 증거가 모두 필요하며, API를 흉내 낸 객체만으로 native 통과를 주장하지 않는다.
+capability와 선택 backend의 프로젝트별 관측을 기록한다. URL/화면 일치만으로 어떤 API를
+사용했는지 증명했다고 쓰지 않는다. 두 환경에서 cold bootstrap·앱 hash 변경·unknown
+fallback·수정키/다른 target/download/외부 링크/form/일반 문서 앵커 우회도 검사한다.
+두 시나리오는 schema version 3 보고서의 기본 `viewports`와
+`compatibility.navigation_api_unavailable.viewports`에 각각 desktop/mobile 전체 결과를
+남긴다. 어느 한쪽도 생략하지 않으며 동일한 공통 검사 제한 시간 안에서 실행한다.
+파일 직접 열기 지원은 hash manifest로 검증한다. history manifest는 HTTP(S)가 필요하며
+실행 환경에 따라 mode를 암묵 변환해 테스트하지 않는다.
 history 모드는 실제 배포 서버에서도 직접 접속·새로고침을 검증해야 하며, 로컬
 검사기가 제공하는 fallback만으로 배포 설정까지 통과했다고 주장하지 않는다.
 "웹 앱"이 아니면 프로젝트 유형에 적합한 E2E 테스트를 수행한다.

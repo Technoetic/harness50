@@ -12,7 +12,18 @@ const ORIGIN = 'http://harness50.local';
 const VIEWPORTS = [{ name: 'desktop', width: 1440, height: 900 }, { name: 'mobile', width: 390, height: 844 }];
 const routeUrl = (routing, path) => routing.mode === 'hash' ? `${ENTRY}#${path}` : `${ORIGIN}${path}`;
 
-async function assertScreen(page, routing, route, phase) {
+async function probeNavigationApi(page, unavailable) {
+  const observed = await page.evaluate(() => ({
+    available: typeof window.navigation?.navigate === 'function' && typeof window.navigation.addEventListener === 'function' && window.navigation.currentEntry != null &&
+      typeof window.NavigateEvent?.prototype?.intercept === 'function',
+    property_present: 'navigation' in window
+  }));
+  if (unavailable && (observed.available || observed.property_present)) throw new Error('Navigation API absence could not be verified');
+  return observed;
+}
+
+async function assertScreen(page, routing, route, phase, unavailable) {
+  await probeNavigationApi(page, unavailable);
   try {
     await page.waitForFunction(({ routing, id, url }) => {
       if (location.href !== url) return false;
@@ -34,6 +45,7 @@ async function assertScreen(page, routing, route, phase) {
       });
     }, { routing, id: route.id, url: routeUrl(routing, route.path) }, { timeout: 3000 });
   } catch { throw new Error(`Route ${route.id} failed ${phase}: URL and visible screen must agree`); }
+  return probeNavigationApi(page, unavailable);
 }
 
 async function measure(page, AxeBuilder) {
@@ -67,7 +79,8 @@ export async function verifyOutput(workspaceRoot, { timeoutMs = 60000, executabl
   if (!Number.isInteger(timeoutMs) || timeoutMs < 1000 || timeoutMs > 120000) throw new Error('Invalid browser timeout');
   if (executablePath !== undefined && (typeof executablePath !== 'string' || !executablePath.trim())) throw new Error('Invalid browser executable path');
   const root = await physicalWorkspace(workspaceRoot);
-  const report = { schema_version: 2, generated_at: new Date().toISOString(), artifact_path: ARTIFACT, verdict: 'FAIL', viewports: [] };
+  const report = { schema_version: 3, generated_at: new Date().toISOString(), artifact_path: ARTIFACT, verdict: 'FAIL', viewports: [],
+    compatibility: { navigation_api_unavailable: { viewports: [] } } };
   let browser, deadline;
   try {
     const bytes = await readSafe(root, ARTIFACT);
@@ -80,8 +93,15 @@ export async function verifyOutput(workspaceRoot, { timeoutMs = 60000, executabl
     browser = await chromium.launch({ headless: true, ...(executablePath ? { executablePath } : {}), timeout: Math.max(1, Math.min(timeoutMs - (Date.now() - started), 15000)) });
     if (report.error) throw new Error(report.error);
     const allowed = new Set([ROUTE_ENTRY_PATH, ...(routing.mode === 'history' ? [...routing.routes.map(route => route.path), UNKNOWN_ROUTE_PATH] : [])]);
-    async function withPage(viewport, run) {
+    async function withPage(viewport, unavailable, run) {
       const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, serviceWorkers: 'block', acceptDownloads: false, reducedMotion: 'reduce' });
+      if (unavailable) await context.addInitScript(() => {
+        // Delete instead of assigning undefined: applications may feature-detect
+        // with `in`. Run before application scripts on every new document.
+        if (!Reflect.deleteProperty(window, 'navigation') || 'navigation' in window || typeof window.navigation !== 'undefined') {
+          throw new Error('Navigation API could not be made unavailable');
+        }
+      });
       const errors = [];
       let blockedRequests = 0;
       let page;
@@ -106,63 +126,67 @@ export async function verifyOutput(workspaceRoot, { timeoutMs = 60000, executabl
       } finally { await context.close(); }
     }
     const fallback = routing.routes.find(route => route.id === routing.fallback);
-    for (const viewport of VIEWPORTS) {
-      const initial = await withPage(viewport, async page => {
-        const historyBefore = await page.evaluate(() => history.length);
-        await page.goto(ENTRY, { waitUntil: 'load', timeout: 10000 });
-        await assertScreen(page, routing, fallback, 'initial entry');
-        if (await page.evaluate(() => history.length) !== historyBefore + 1) throw new Error('Initial fallback must replace its URL');
-        await page.evaluate(() => document.fonts.ready);
-        const metrics = await measure(page, AxeBuilder);
-        await page.keyboard.press('Tab');
-        const keyboardFocus = await page.evaluate(() => document.activeElement !== document.body && document.activeElement !== document.documentElement);
-        const screenshot = `step_archive/screenshots/verified-${viewport.name}.png`;
-        await writeSafe(root, screenshot, await page.screenshot({ fullPage: true, animations: 'disabled', timeout: 10000 }));
-        const historyAtEntry = await page.evaluate(() => history.length);
-        await page.goto(routeUrl(routing, UNKNOWN_ROUTE_PATH), { waitUntil: 'load', timeout: 10000 });
-        await assertScreen(page, routing, fallback, 'unknown fallback');
-        if (await page.evaluate(() => history.length) !== historyAtEntry + 1) throw new Error('Unknown fallback must replace its URL');
-        return { ...metrics, keyboard_focus: keyboardFocus, screenshot, initial_entry: true, unknown_fallback: true };
-      });
-      const view = { ...viewport, ...initial, routes: [], pass: false };
-      report.viewports.push(view);
-      for (const route of routing.routes) {
-        const result = await withPage(viewport, async page => {
-          await page.goto(routeUrl(routing, route.path), { waitUntil: 'load', timeout: 10000 });
-          await assertScreen(page, routing, route, 'direct entry');
+    for (const scenario of [{ unavailable: false, viewports: report.viewports },
+      { unavailable: true, viewports: report.compatibility.navigation_api_unavailable.viewports }]) {
+      for (const viewport of VIEWPORTS) {
+        const initial = await withPage(viewport, scenario.unavailable, async page => {
+          const historyBefore = await page.evaluate(() => history.length);
+          await page.goto(ENTRY, { waitUntil: 'load', timeout: 10000 });
+          const navigationApi = await assertScreen(page, routing, fallback, 'initial entry', scenario.unavailable);
+          if (await page.evaluate(() => history.length) !== historyBefore + 1) throw new Error('Initial fallback must replace its URL');
           await page.evaluate(() => document.fonts.ready);
-          const direct = await measure(page, AxeBuilder);
-          await page.reload({ waitUntil: 'load', timeout: 10000 });
-          await assertScreen(page, routing, route, 'reload');
-          const reloaded = await measure(page, AxeBuilder);
-          let navigation = { status: 'not-applicable', reason: 'single-screen' };
-          if (routing.routes.length > 1) {
-            const { link, target } = await outgoingLink(page, routing, route);
-            await link.click();
-            await assertScreen(page, routing, target, 'navigation');
-            await page.goBack({ waitUntil: 'load', timeout: 10000 });
-            await assertScreen(page, routing, route, 'back');
-            await page.goForward({ waitUntil: 'load', timeout: 10000 });
-            await assertScreen(page, routing, target, 'forward');
-            navigation = { status: 'pass', target_id: target.id, back: true, forward: true };
-          }
-          return { ...route, ...reloaded, horizontal_overflow: direct.horizontal_overflow || reloaded.horizontal_overflow,
-            visible_text_length: Math.min(direct.visible_text_length, reloaded.visible_text_length),
-            violations: [...direct.violations, ...reloaded.violations], accessibility_incomplete: [...new Set([...direct.accessibility_incomplete, ...reloaded.accessibility_incomplete])],
-            direct_entry: true, reload: true, navigation };
+          const metrics = await measure(page, AxeBuilder);
+          await page.keyboard.press('Tab');
+          const keyboardFocus = await page.evaluate(() => document.activeElement !== document.body && document.activeElement !== document.documentElement);
+          const screenshot = `step_archive/screenshots/verified-${scenario.unavailable ? 'navigation-api-unavailable-' : ''}${viewport.name}.png`;
+          await writeSafe(root, screenshot, await page.screenshot({ fullPage: true, animations: 'disabled', timeout: 10000 }));
+          const historyAtEntry = await page.evaluate(() => history.length);
+          await page.goto(routeUrl(routing, UNKNOWN_ROUTE_PATH), { waitUntil: 'load', timeout: 10000 });
+          await assertScreen(page, routing, fallback, 'unknown fallback', scenario.unavailable);
+          if (await page.evaluate(() => history.length) !== historyAtEntry + 1) throw new Error('Unknown fallback must replace its URL');
+          return { ...metrics, navigation_api: navigationApi, keyboard_focus: keyboardFocus, screenshot, initial_entry: true, unknown_fallback: true };
         });
-        result.pass = passes(result);
-        view.routes.push(result);
-        view.errors.push(...result.errors);
-        view.blocked_requests += result.blocked_requests;
-        view.violations.push(...result.violations);
-        view.horizontal_overflow ||= result.horizontal_overflow;
-        view.accessibility_incomplete = [...new Set([...view.accessibility_incomplete, ...result.accessibility_incomplete])];
+        const view = { ...viewport, ...initial, routes: [], pass: false };
+        scenario.viewports.push(view);
+        for (const route of routing.routes) {
+          const result = await withPage(viewport, scenario.unavailable, async page => {
+            await page.goto(routeUrl(routing, route.path), { waitUntil: 'load', timeout: 10000 });
+            const navigationApi = await assertScreen(page, routing, route, 'direct entry', scenario.unavailable);
+            await page.evaluate(() => document.fonts.ready);
+            const direct = await measure(page, AxeBuilder);
+            await page.reload({ waitUntil: 'load', timeout: 10000 });
+            await assertScreen(page, routing, route, 'reload', scenario.unavailable);
+            const reloaded = await measure(page, AxeBuilder);
+            let navigation = { status: 'not-applicable', reason: 'single-screen' };
+            if (routing.routes.length > 1) {
+              const { link, target } = await outgoingLink(page, routing, route);
+              await link.click();
+              await assertScreen(page, routing, target, 'navigation', scenario.unavailable);
+              await page.goBack({ waitUntil: 'load', timeout: 10000 });
+              await assertScreen(page, routing, route, 'back', scenario.unavailable);
+              await page.goForward({ waitUntil: 'load', timeout: 10000 });
+              await assertScreen(page, routing, target, 'forward', scenario.unavailable);
+              navigation = { status: 'pass', target_id: target.id, back: true, forward: true };
+            }
+            return { ...route, ...reloaded, horizontal_overflow: direct.horizontal_overflow || reloaded.horizontal_overflow,
+              visible_text_length: Math.min(direct.visible_text_length, reloaded.visible_text_length),
+              violations: [...direct.violations, ...reloaded.violations], accessibility_incomplete: [...new Set([...direct.accessibility_incomplete, ...reloaded.accessibility_incomplete])],
+              direct_entry: true, reload: true, navigation, navigation_api: navigationApi };
+          });
+          result.pass = passes(result);
+          view.routes.push(result);
+          view.errors.push(...result.errors);
+          view.blocked_requests += result.blocked_requests;
+          view.violations.push(...result.violations);
+          view.horizontal_overflow ||= result.horizontal_overflow;
+          view.accessibility_incomplete = [...new Set([...view.accessibility_incomplete, ...result.accessibility_incomplete])];
+        }
+        view.pass = passes(view) && (view.focusable_elements === 0 || view.keyboard_focus) && view.routes.every(route => route.pass);
       }
-      view.pass = passes(view) && (view.focusable_elements === 0 || view.keyboard_focus) && view.routes.every(route => route.pass);
     }
     if (sha256(await readSafe(root, ARTIFACT)) !== report.artifact_sha256) throw new Error('HTML changed during browser verification');
-    if (!report.error && report.viewports.length === 2 && report.viewports.every(view => view.pass)) report.verdict = 'PASS';
+    const allViews = [...report.viewports, ...report.compatibility.navigation_api_unavailable.viewports];
+    if (!report.error && allViews.length === 4 && allViews.every(view => view.pass)) report.verdict = 'PASS';
   } catch (error) { report.error = error.code === 'ERR_MODULE_NOT_FOUND' ? 'Browser tools missing: run npm ci in the plugin checkout, then npx playwright install chromium' : error.message; }
   finally { clearTimeout(deadline); await browser?.close().catch(() => {}); }
   await writeSafe(root, REPORT, `${JSON.stringify(report, null, 2)}\n`);

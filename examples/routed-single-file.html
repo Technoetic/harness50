@@ -62,19 +62,100 @@
     class ScreenRouter {
       #manifest;
       #screens;
-      constructor(manifest, screens) { this.#manifest = manifest; this.#screens = screens; }
-      start() {
-        window.addEventListener('hashchange', () => this.render());
-        this.render();
+      #mode;
+      #entry;
+      #replacing = false;
+      #activeId;
+      constructor(manifest, screens) {
+        this.#manifest = manifest;
+        this.#screens = screens;
+        this.#mode = manifest.mode;
+        this.#entry = new URL(location.href);
+        this.#entry.hash = '';
       }
-      render() {
-        const path = location.hash.slice(1);
-        const route = this.#manifest.routes.find(item => item.path === path)
-          ?? this.#manifest.routes.find(item => item.id === this.#manifest.fallback);
-        if (path !== route.path) history.replaceState(null, '', '#' + route.path);
+      start() {
+        this.#restore(true);
+        const nativeNavigation = /^https?:$/.test(location.protocol) && window.navigation?.currentEntry != null
+          && typeof window.navigation.navigate === 'function' && typeof window.navigation.addEventListener === 'function'
+          && typeof window.NavigateEvent?.prototype.intercept === 'function';
+        if (nativeNavigation) {
+          navigation.addEventListener('navigate', event => {
+            if (this.#replacing || !event.canIntercept || event.downloadRequest != null || event.formData != null) return;
+            const source = event.sourceElement;
+            if (source instanceof HTMLFormElement || source?.form) return;
+            if (source instanceof HTMLAnchorElement && (source.hasAttribute('download') || !['', '_self'].includes(source.target.toLowerCase()))) return;
+            const destination = new URL(event.destination.url);
+            const anchorRoute = event.navigationType === 'traverse' && event.destination.sameDocument
+              ? this.#historyAnchorRoute(destination) : null;
+            if (anchorRoute?.id === this.#activeId) return;
+            const route = this.#route(destination) ?? anchorRoute;
+            if (!route) return;
+            event.intercept({ focusReset: 'manual', handler: () => {
+              if (!anchorRoute) this.#replaceUrl(route);
+              this.#render(route);
+            } });
+          });
+        } else if (this.#mode === 'hash') {
+          window.addEventListener('hashchange', () => this.#restore());
+        } else {
+          window.addEventListener('popstate', () => this.#restore());
+          document.addEventListener('click', event => {
+            if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+            const link = event.target instanceof Element ? event.target.closest('a[href]') : null;
+            if (!link || link.hasAttribute('download') || !['', '_self'].includes(link.target.toLowerCase())) return;
+            const route = this.#route(new URL(link.href));
+            if (!route) return;
+            event.preventDefault();
+            if (location.href !== this.#href(route)) history.pushState(null, '', this.#href(route));
+            this.#render(route);
+          });
+        }
+      }
+      #fallback() { return this.#manifest.routes.find(route => route.id === this.#manifest.fallback); }
+      #href(route) {
+        const url = this.#mode === 'hash' ? new URL(this.#entry) : new URL(route.path, this.#entry);
+        if (this.#mode === 'hash') url.hash = route.path;
+        return url.href;
+      }
+      #route(url) {
+        if (url.origin !== this.#entry.origin) return null;
+        if (this.#mode === 'hash') {
+          if (url.pathname !== this.#entry.pathname || url.search !== this.#entry.search || (url.hash && !url.hash.startsWith('#/'))) return null;
+          return this.#manifest.routes.find(route => route.path === url.hash.slice(1)) ?? this.#fallback();
+        }
+        if (url.search || url.hash) return null;
+        return this.#manifest.routes.find(route => route.path === url.pathname) ?? null;
+      }
+      #historyAnchorRoute(url) {
+        if (this.#mode !== 'history' || url.origin !== this.#entry.origin || url.search || !url.hash) return null;
+        return this.#manifest.routes.find(route => route.path === url.pathname) ?? null;
+      }
+      #replaceUrl(route) {
+        if (location.href === this.#href(route)) return;
+        this.#replacing = true;
+        try { history.replaceState(null, '', this.#href(route)); }
+        finally { this.#replacing = false; }
+      }
+      #restore(initial = false) {
+        const url = new URL(location.href);
+        const anchorRoute = this.#historyAnchorRoute(url);
+        if (anchorRoute) {
+          if (initial || anchorRoute.id !== this.#activeId) this.#render(anchorRoute);
+          return;
+        }
+        if (this.#mode === 'hash' && url.hash && !url.hash.startsWith('#/')) {
+          if (initial) this.#render(this.#fallback());
+          return;
+        }
+        const route = this.#route(url) ?? this.#fallback();
+        this.#replaceUrl(route);
+        this.#render(route);
+      }
+      #render(route) {
+        this.#activeId = route.id;
         for (const screen of this.#screens) screen.hidden = screen.dataset.harnessScreen !== route.id;
         for (const link of document.querySelectorAll('nav a')) {
-          if (link.getAttribute('href') === '#' + route.path) link.setAttribute('aria-current', 'page');
+          if (link.href === this.#href(route)) link.setAttribute('aria-current', 'page');
           else link.removeAttribute('aria-current');
         }
         const heading = this.#screens.find(screen => !screen.hidden).querySelector('h1');

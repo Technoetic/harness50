@@ -83,12 +83,15 @@ test('historical Claude Step 50 remains recorded without retroactive browser ver
   f.noCommands();
 });
 
-test('Claude final writer rejects old, incomplete and mismatched evidence, then records a valid v2 result', async () => {
+test('Claude final writer rejects old, incomplete and mismatched evidence, then records a valid v3 result', async () => {
   const f = await fixture();
   const reportPath = join(f.project, 'step_archive', 'outputs', 'browser-output.json');
   const valid = passingBrowserReport(sha256(readFileSync(join(f.project, 'dist', 'index.html'))), f.manifest);
   for (const mutate of [
     report => { report.schema_version = 1; },
+    report => { report.schema_version = 2; },
+    report => { delete report.compatibility; },
+    report => { report.compatibility.navigation_api_unavailable.viewports[0].routes = []; },
     report => { delete report.routing; },
     report => { report.viewports[0].routes = []; },
     report => { report.viewports[1].routes[0].reload = false; },

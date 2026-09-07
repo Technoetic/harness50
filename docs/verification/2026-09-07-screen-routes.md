@@ -1,5 +1,9 @@
 # Addressable-screen integration verification
 
+This packet records the initial addressable-screen change at `67f6c28`.
+The subsequent Navigation API implementation and schema-3 completion contract
+are recorded in [the Navigation API verification packet](2026-09-07-navigation-api.md).
+
 - task_id: harness50-screen-routes
 - artifact_paths: `docs/ROUTING.md`; `examples/routed-single-file.html`; `scripts/lib/route-contract.mjs`; `scripts/lib/browser-report.mjs`; `scripts/lib/final-output.mjs`; `scripts/verify-output.mjs`; `scripts/quality-gate.mjs`; `codex/scripts/lib/acceptance.mjs`; both `hooks/step-progress-writer` variants; Claude/Codex Steps 1, 25, 30, 37, 45, 46, 50; runtime test packet in this directory.
 - verification_commands_and_results: full unit suite 1,085 tests, 1,083 passed and 2 platform skips; Brave browser suite 18/18; isolated native Claude security regressions 45/45; native PowerShell and forced Bash lifecycle/final-gate checks 20/20 each; step-contract checks 190/190; index validator 50/50. Exact commands are below.
