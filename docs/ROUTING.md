@@ -126,6 +126,24 @@ possible application state.
 
 ## Verification
 
+Step 44 is **클라이언트 사이드 라우팅** (client-side routing). Step 30 designs
+the route inventory and Step 37 implements it; Step 44 integrates and rechecks it
+after JavaScript modularization, CSS separation and design corrections. Its
+required completion checks cover the screen/URL map, deep links and traversal,
+native and compatible backends, mode-specific server fallback, and ordinary
+browser behavior. Reusable HTML components remain a supporting requirement.
+Development JavaScript and CSS stay in separate source files; the build bundles
+them into the one self-contained HTML, including its inert JSON route manifest.
+
+For compatibility, Step 44 keeps the report path
+`step_archive/step044_html컴포넌트화.md` and its existing artifact acceptance ID.
+The report now records routing integration and component evidence. Missing or
+failed routing checks block a new Step 44 completion. This does not rewrite or
+revalidate historical completion receipts. Step 44 reviews the server fallback
+configuration and local direct entry; Step 45 still verifies history-mode direct
+entry and reload on the actual deployment server. Step 50 still requires the
+final schema-3 browser report bound to the current HTML.
+
 Run the verifier from a checkout with the pinned browser dependencies installed:
 
 ```text

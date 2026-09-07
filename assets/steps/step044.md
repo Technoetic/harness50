@@ -7,52 +7,118 @@ persistence: session
 > "<project-root>"`로 실행하고 종료 코드 0 및 현재 소스에 대한 PASS를 확인한다.
 > 설정은 `docs/QUALITY.md`를 따른다. 누락·실패·오래된 증거는 다음 단계로 넘기지 않는다.
 
-# Step 44 - HTML 컴포넌트화
+# Step 44 - 클라이언트 사이드 라우팅
 
 <!-- MOAI-ENRICHED v1 -->
 > **📐 Plan → Run → Sync** (MoAI-ADK 워크플로우)
 > - **Plan**: 본 Step의 SPEC 자동 생성 `step_archive/specs/SPEC-044.md` 를 먼저 읽고 Acceptance 기준을 확정한다.
 > - **Run**: 본문 지침대로 실행. 구현 산출물에는 `@MX:NOTE` 최소 1개 부착 (위험 시 `@MX:WARN` + `@MX:REASON`, 계약 시 `@MX:ANCHOR` + `@MX:REASON`, 미완료 시 `@MX:TODO`). MoAI mx-tag-protocol SoT 준수.
-> - **Sync**: 결과 파일 `step_archive/step044_*.md` 저장 후 1줄 완료 보고 `Step 044/50 완료`.
+> - **Sync**: 결과 파일 `step_archive/step044_html컴포넌트화.md`와 `step_archive/outputs/trust5_r2.md`를 저장하고 검증 결과를 보고한다.
 >
 > **모델 정책**: 조사·구현 서브에이전트 = **haiku** (CLAUDE.md 정책 준수). 평가 라운드만 sonnet.
 >
-> **위치**: 구현·정리 구간 (E2E 검증 step045 전)
+> **위치**: 37단계 최초 구현과 41단계 JavaScript 모듈화, 42단계 CSS 분리, 43단계 보정 뒤의 routing 통합·회귀 gate. 45단계 전체 E2E와 50단계 최종 검증은 그대로 유지한다.
 
-모듈화된 JavaScript 구조에 맞춰 HTML을 **최대한** 재사용 가능한 컴포넌트로 분리한다.
+## 목표와 범위
 
-## 파일 구조 규칙
+37단계의 최초 routing 구현을 다시 시작하지 않는다. 41~43단계가 반영된 현재 source와
+단일 최종 HTML을 기준으로 `docs/ROUTING.md` 계약을 통합하고 회귀를 점검한다. 기존의
+재사용 가능한 semantic HTML component, 접근성, reference, current build와 독립 quality
+milestone gate도 함께 보존한다.
 
-- HTML 엔트리는 `src/index.html`에 작성
-- JS/CSS는 외부 파일로 참조 (`<script src="js/...">`, `<link href="css/...">`)
-- **인라인 스크립트/스타일 삽입 금지** — 빌드 시 html-bundler.ps1이 자동 번들링
+산출물 `step_archive/step044_html컴포넌트화.md`는 45~50단계와의 호환을 위해 유지하는
+legacy 경로다. 이름을 바꾸지 말고 component와 routing 증거를 모두 기록한다. 이 단계의
+내부 fixture나 정적 검사는 실제 배포 rewrite 증거가 아니며, 실제 배포 direct visit와
+refresh 검증은 45단계가 담당하고, 50단계는 현재 HTML에 결합된 최종 browser 보고서를 검증한다.
 
-합리적인 선에서 최대한 많은 서브에이전트를 병렬로 사용하여 (동시 실행 최대 10개) 컴포넌트화를 수행한다.
+## 파일 구조와 component 규칙
 
-**컴포넌트화 단계에서 절대로 superpowers:brainstorming을 사용하지 않는다.**
+- 개발 HTML entry는 `src/index.html`에 둔다.
+- 반복 HTML은 책임, input, owned DOM과 lifecycle이 분명한 semantic component로 통합한다.
+- heading hierarchy, document order와 progressive enhancement를 보존한다.
+- 개발 source의 JS/CSS는 external JavaScript/CSS 파일로 참조하고 inline script, style
+  element, style attribute를 만들지 않는다.
+- external 정책은 개발 source에 한정한다. bundler가 만드는 self-contained
+  `dist/index.html`과 정확히 하나의 inline
+  `<script id="harness50-routes" type="application/json">` data manifest를 허용하고 검증한다.
 
-서브에이전트는 항상 haiku를 사용한다.
+component 분리 뒤 semantic landmark, accessible label, keyboard order, visible focus, form
+state, live region, 중복 ID와 모든 asset reference를 source와 rendered DOM에서 점검한다.
+manifest의 정확한 build 명령이 exit code 0인지, current `dist/index.html`이 symlink가 아닌
+regular nonempty UTF-8 파일이고 `<html`/`</html>` boundary를 갖는지도 확인한다.
 
+## routing 통합과 회귀 점검
+
+`docs/ROUTING.md`를 기준으로 다음을 모두 실행하고 명령, 관측값과 판정을 legacy 보고서에
+남긴다.
+
+1. 단일 최종 `dist/index.html`의 route manifest, `data-harness-screen` root와 canonical
+   URL을 일대일로 대조한다. 현재 URL의 screen root 하나만 표시하며 document title,
+   active navigation, heading focus와 scroll을 확인한다. 여러 화면인 앱은 각 화면의
+   다른 선언 화면으로 향하는 실제 `a[href]`도 확인한다.
+2. 모든 route에서 initial load, deep link, reload를 확인한다. 여러 화면인 앱은 각 화면의
+   outgoing navigation과 Back/Forward도 검사한다. empty·unknown route는 fallback을
+   렌더링하고 추가 entry 없이 canonical URL로
+   replace해야 한다. 실제 앱에 존재하는 일반 fragment도 target으로 이동해야 한다.
+   한 화면 앱의 outgoing link와 화면 간 Back/Forward는 `not-applicable: single-screen`으로
+   기록하고 직접 진입·reload·fallback은 검사한다.
+3. HTTP(S)에서 `navigation.navigate`와 `navigation.addEventListener`가 함수이고,
+   `navigation.currentEntry`가 null이 아니며, `NavigateEvent.prototype.intercept`가 실제로
+   사용 가능한 경우에만 Navigation API backend를 고른다. event별 `canIntercept`도 확인한다.
+   그렇지 않으면 manifest에 선언된 History API 또는 hash fallback을 쓴다. backend는 정확히
+   하나만 활성화하고 initial URL을 명시적으로 render한다. capability에 따라 hash/history
+   URL mode를 몰래 바꾸거나 file URL에 가상 history path를 만들지 않는다.
+4. modified click, 새 tab·window target, download, 외부 URL, form submit과 일반
+   `#section` anchor의 native behavior를 보존한다. 앱 hash `#/...`와 일반 fragment를
+   구분하고 중복 render·history entry를 만들지 않는다. 실제 Navigation API 분기와 API가
+   없거나 일부 capability만 있는 fallback 분기를 각각 검사한다. URL 동작만으로 사용 API를
+   단정하지 말고 실제 지원 HTTP(S) 브라우저의 interception과 backend 선택을 관측한다.
+   가짜 API 주입만으로 native 분기 증거를 대체하지 않는다.
+5. hash mode의 HTTP와 직접 file 동작을 점검한다. history mode이면 app-document 경로를
+   같은 최종 HTML로 돌리고 API·asset missing은 진짜 404로 남기는 server fallback 구성을
+   검토하고 로컬 직접 진입·reload도 확인한다. hash/file에서는 rewrite가 불필요한 사유와
+   동작을 기록한다. 내부 fallback server의 성공을 실제 배포 설정 증거로 기록하지 않는다.
+
+## 실행과 독립 검증
+
+가능하면 component·routing 통합 구현자와 독립 검증자를 분리한다. 구현자는 선언한
+ownership만 변경한다. 독립 검증자는 application source, legacy 보고서, milestone을
+수정하지 않고 component·accessibility·reference·build와 다섯 routing 완료 조건을 처음부터
+재검사한다. 위임할 수 없으면 한 실행자가 역할을 분리해 순서대로 수행하며 위임했다고
+기록하지 않는다.
+
+모든 필수 검사가 `PASS`인 뒤에만 `step_archive/outputs/trust5_r2.md`를 만든다. 누락,
+실행하지 않은 검사, 오래된 증거와 실패 결과는 `PASS`가 아니다. 오류를 분석하고 수정한 뒤
+최대 3회까지 재검사할 수 있다. 3회 뒤에도 실패하면 시도별 명령, exit code와 원인을
+legacy 보고서에 기록하고 **현재 단계에서 정지한다**. 실패 상태로 다음 Step을 진행하지 않는다.
+
+## 완료 조건
+
+- `html-componentization-report`: legacy 보고서에 component·routing·접근성·build 증거가 기록됐다.
+- `review-milestone`: 모든 필수 gate 뒤 두 번째 quality milestone이 기록됐다.
+- `project-build-command`: manifest의 정확한 non-optional build가 성공했다.
+- `reusable-semantic-components`: 반복 HTML이 책임 있는 semantic component로 분리됐다.
+- `external-assets-only`: 개발 source의 JS/CSS external 정책과 final bundling·JSON data manifest가 함께 검증됐다.
+- `accessibility-reference-integrity`: 구조·label·keyboard·focus·asset reference가 유효하다.
+- `dist-html-boundary`: current build의 dist HTML이 regular·nonempty·boundary 조건을 충족한다.
+- `independent-milestone-verifier`: source·보고서를 수정하지 않는 독립 검증자가 모든 gate를 확인했다.
+- `pass-only-quality-milestone`: 누락이나 실패 없이 모든 필수 검사가 `PASS`인 뒤에만 milestone을 만들었다.
+- `routing-screen-url-map`: 단일 최종 HTML의 manifest, screen root와 canonical URL이 일대일로 일치한다.
+- `routing-deep-link-traversal`: initial·deep link·reload·unknown replace와 여러 화면의 outgoing·Back/Forward가 통과했다. 한 화면의 화면 간 이동은 `not-applicable: single-screen`으로 기록했다.
+- `routing-navigation-backends`: 엄격한 Navigation API capability와 History/hash fallback 중 하나의 backend만 선언 URL mode 그대로 동작한다.
+- `routing-server-fallback`: hash/file 동작과 history server fallback 구성을 검토하고 내부 fallback을 배포 증거로 오인하지 않았다.
+- `routing-native-behavior`: native link·form·anchor와 title·active·focus·scroll 동작이 보존됐다.
 
 ## Budget Forcing
 
-서브에이전트가 구현을 너무 빨리 완료하려 할 때 다음을 강제한다:
-- 구현 완료 선언 전에 "빠뜨린 엣지 케이스가 없는가?" 를 반드시 검토한다
-- 검토 없이 완료 선언 시 해당 서브에이전트는 재실행한다
+완료 선언 전에 빠뜨린 route, browser backend, native behavior와 component edge case가 없는지
+검토한다. 검토하지 않았거나 필수 증거 하나라도 누락되면 완료를 선언하지 않는다.
 
 ## Self-Calibration
 
-구현 완료 후 다음을 스스로 평가하라:
-- 요구사항이 100% 구현되었는가? (Y/N)
-- 빌드가 통과하는가? (Y/N)
-- N이면 해당 부분을 보완하고 재평가한다. 3회 재시도 후에도 미달이면 오류 기록 후 다음 Step 진행.
+- component·접근성·build 요구가 모두 충족됐는가? (Y/N)
+- 다섯 routing 완료 조건이 모두 실제 증거로 통과했는가? (Y/N)
+- 독립 검증자가 source·보고서를 수정하지 않고 같은 결론을 냈는가? (Y/N)
 
-## 오류 발생 시
-
-오류 발생 시 원인을 분석하고 수정한 뒤 재시도한다. 3회 재시도 후에도 실패하면 오류를 기록하고 다음 Step으로 진행한다.
-
-
----
-
-이 지침을 완료한 즉시 자동으로 step045.md를 읽고 수행한다. 사용자 확인을 기다리지 않는다.
-
+하나라도 N이면 보완 후 재검사한다. 최대 3회 뒤에도 N이면 실패를 기록하고 현재 단계에서
+정지한다. 모두 Y이고 품질 게이트가 PASS일 때만 workflow가 step045로 진행할 수 있다.
