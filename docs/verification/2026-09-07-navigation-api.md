@@ -4,8 +4,8 @@
 - artifact_paths: `examples/routed-single-file.html`; `tests/navigation-api.test.mjs`; `scripts/verify-output.mjs`; `scripts/lib/browser-report.mjs`; `scripts/quality-gate.mjs`; browser/completion fixtures; Claude/Codex Steps 1, 30, 37, 45, 46, 50; `docs/ROUTING.md`; `docs/QUALITY.md`.
 - verification_commands_and_results: Full unit suite 1,087 tests: 1,085 passed, two platform skips, zero failures. Complete Brave browser-output suite 21/21 and new Navigation API suite 24/24 passed (45 total). Native isolated Claude regressions 45/45, forced Bash lifecycle/final gates 20/20, and native final-output checks 5/5 after the last message-only correction. Step contracts/parity 190/190; step index validator 50/50. Exact commands and scope are below.
 - assumptions: The user approved Navigation API preference on capable HTTP(S), conventional History/hash fallback, and direct-file hash support. URL mode stays statically declared; a history manifest requires HTTP(S) hosting and deployment rewrites.
-- unresolved: No confirmed runtime/spec findings remain. Actual model-generated full workflows, deployed-server rewrites and non-Chromium browser engines were not exercised. Forced API absence tests compatibility behavior, not every old-browser implementation. Installation/PR delivery is recorded separately below when completed.
-- next_safe_action: Complete the CLI installation and independent byte check, update the existing draft PR and verify its CI, then consume the installed skills from a fresh Codex conversation.
+- unresolved: No confirmed runtime/spec findings remain. Actual model-generated full workflows, deployed-server rewrites and non-Chromium browser engines were not exercised. Forced API absence tests compatibility behavior, not every old-browser implementation. Final remote CI is reported on the exact delivery commit in draft PR #4; earlier routing CI does not validate this change.
+- next_safe_action: Publish this reviewed delivery commit to existing draft PR #4 and verify its CI. Use the installed skills from a fresh Codex conversation and a separate app workspace, with the matching validation checkout at `D:/harness50-worktrees/screen-routes`; public main has not yet received schema 3.
 - verified_by: `/root/route_contract_audit`, independent read-only review, 2026-09-07 12:44:02 KST. Core tests 37 passed plus one existing Windows file-symlink EPERM skip; measured verifier 3/3; frozen example/native/fallback/file/anchor cases 9/9. P2 history-anchor restoration and P3 stale schema wording were reproduced/reviewed and resolved. Generation instructions authored by that reviewer were excluded from its independent scope.
 
 ## Resulting behavior
@@ -105,3 +105,42 @@ The existing draft PR #4 is the integration destination. No public main merge,
 release tag, live generated-app workflow or deployment-server change is implied.
 The existing generic plugin scaffold validator mismatch is unchanged; see the
 initial routing verification packet for the reproduced pre-existing limitation.
+
+## Local CLI installation and handoff
+
+Functional commit `97f3118b7982ac02d76d33fc246eaeaead11184d` was installed through
+the supported personal-marketplace CLI flow as
+`harness50@personal` version `2.2.0+codex.20260907035038`. The subsequent delivery
+commit changes only this verification packet and the implementation plan.
+
+- Personal source: `C:/Users/corei/plugins/harness50`.
+- Codex cache: `C:/Users/corei/.codex/plugins/cache/personal/harness50/2.2.0+codex.20260907035038`.
+- Backup: `C:/Users/corei/plugins/.backups/harness50-before-navigation-api-20260907-035038.zip`,
+  SHA-256 `e6dc00e2ff231f383bad75f26d09346baf732e05b81953b358756d173ca4d1c7`.
+- Independent report: `D:/harness50-worktrees/review-notes/navigation-installed-review.md`,
+  SHA-256 `c1fd44d6f14f9504d35c81c8f4db39b02b1daa83bdf86bc00ead8b703b54f7da`.
+
+Independent read-only verification by `/root/route_contract_audit` at
+2026-09-07 12:56:08 KST confirmed the CLI reports installed/enabled true and all
+245 tracked personal-source/cache file pairs are byte-identical. The cache's two
+additional files are CLI-generated migrated command skills. Against raw Git blobs,
+221 files match exactly, 23 differ only by CRLF/LF, and the Codex manifest differs
+by the cachebuster version and JSON serialization; its other fields match.
+The 241-file backup matches the previous functional revision with the same
+line-ending and manifest qualifications. No files were deleted during the update.
+
+The actual installed `inspectBrowserOutput` passed against the saved schema-3
+example report and its recorded HTML digest, covering all three routes in both
+desktop/mobile scenarios. The installed step validator passed 50/50. Both checks
+work without `node_modules` in the source or cache. This inspection reuses the
+measured browser artifact; it is not a live model-generated workflow.
+
+Claude remains version 2.2.0 with its existing settings: disabled specifically in
+`D:/NS`, enabled at the user-default scope. No Claude installation or settings
+were changed. A new Codex conversation is needed to load the updated skills.
+
+The existing vault tool note, index and audit log were updated in local commit
+`9f8a62414cbc4cd93e2b3b4bd6d7c5df1a64905c` and mirrored to the existing local bare
+repository. Unrelated untracked work was preserved without reading or staging it.
+The final PR-head CI result will be recorded in the PR and vault follow-up rather
+than creating another source commit that would invalidate the checked head.

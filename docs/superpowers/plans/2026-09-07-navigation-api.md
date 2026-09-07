@@ -57,8 +57,9 @@ this specification/plan and final verification report.
 
 - [x] Integrate public documentation and both browser suites.
 - [x] Run full required checks and obtain independent review with rerun evidence.
-- [ ] Commit/push the feature branch and update the existing draft PR; verify CI.
-- [ ] Back up and update the local Codex plugin through its CLI; independently
+- [x] Commit the reviewed implementation and prepare the draft PR delivery;
+  final remote CI is tracked on that exact delivery head in PR #4 and the vault.
+- [x] Back up and update the local Codex plugin through its CLI; independently
   verify installed bytes and dependency-free completion inspection.
-- [ ] Update the existing vault tool note/index/log, commit only owned changes and
+- [x] Update the existing vault tool note/index/log, commit only owned changes and
   mirror locally. Record exact limitations and final artifacts.
