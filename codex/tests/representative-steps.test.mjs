@@ -96,6 +96,37 @@ function browserReport(digest) {
   return passingBrowserReport(digest);
 }
 
+test("Step 44 cannot complete with component evidence alone or failed routing checks", async () => {
+  const contract = await loadStepContract(repoRoot, 44);
+  const routeChecks = [
+    "routing-screen-url-map",
+    "routing-deep-link-traversal",
+    "routing-navigation-backends",
+    "routing-server-fallback",
+    "routing-native-behavior"
+  ];
+  const { workspaceRoot, evidence } = await materializeRepresentativeFixture(contract);
+  const componentOnly = evidence.filter(item => !routeChecks.includes(item.acceptance_id));
+  await assert.rejects(
+    validateCompletionEvidence({ contract, evidence: componentOnly, workspaceRoot }),
+    error => error.code === "ACCEPTANCE_MISSING"
+  );
+  for (const id of routeChecks) {
+    await assert.rejects(
+      validateCompletionEvidence({ contract, workspaceRoot,
+        evidence: evidence.filter(item => item.acceptance_id !== id)
+      }), error => error.code === "ACCEPTANCE_MISSING"
+    );
+    await assert.rejects(
+      validateCompletionEvidence({ contract, workspaceRoot,
+        evidence: evidence.map(item => item.acceptance_id === id ? { ...item, ok: false } : item)
+      }), error => error.code === "ACCEPTANCE_MISSING"
+    );
+  }
+  const result = await validateCompletionEvidence({ contract, evidence, workspaceRoot });
+  assert.deepEqual(result.missing_required, []);
+});
+
 test("Step 50 requires a passing browser report bound to its current HTML", async () => {
   const contract = await loadStepContract(repoRoot, 50);
   assert.ok(contract.acceptance.some(item => item.id === "browser-output-report" && item.required && item.validator === "browser-output"));

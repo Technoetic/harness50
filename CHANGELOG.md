@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.3.1 — 2026-09-07
+
+- Rename Step 44 to **클라이언트 사이드 라우팅** in Claude, Codex and the step index, keeping the workflow at exactly 50 steps.
+- Make routing integration after source modularization an explicit Step 44 responsibility. Require evidence for the screen/URL map, deep links and traversal, Navigation API and History/hash backends, mode-specific fallback configuration, and native browser behavior before the second quality milestone.
+- Retain HTML componentization as a supporting requirement, clarify separate development assets versus the single bundled HTML, and stop the Claude step when required checks fail.
+- Preserve the existing Step 44 report path and artifact acceptance ID for downstream compatibility. Step 45 retains deployment-server verification and Step 50 retains final browser-report validation.
+
 ## 2.3.0 — 2026-09-07
 
 - Require a stable URL for every independent screen while keeping a single self-contained HTML entry point. Carry the route contract through Claude and Codex design, implementation and completion steps.
