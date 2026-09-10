@@ -1067,12 +1067,13 @@ test("new workflow atomically creates topic and refuses all recognized shared wo
   const topicPath = join(root, "step_archive", "TOPIC", "TOPIC.md");
   assert.equal(state.topic_path, "step_archive/TOPIC/TOPIC.md");
   assert.equal(state.topic_sha256, await hashFile(topicPath));
-  assert.equal(await readFile(topicPath, "utf8"), "안전한 주제\n");
+  const frozenTopic = await readFile(topicPath, "utf8");
+  assert.ok(frozenTopic.includes("안전한 주제\n"));
   await assert.rejects(
     () => initWorkflow({ workspaceRoot: root, topic: "다른 주제", now: plus(1), idFactory: ids("unused") }),
     error => error.code === "WORKFLOW_CONFLICT"
   );
-  assert.equal(await readFile(topicPath, "utf8"), "안전한 주제\n");
+  assert.equal(await readFile(topicPath, "utf8"), frozenTopic);
 
   const conflictFixtures = [
     ["Claude progress", async candidate => {
@@ -1168,7 +1169,7 @@ test("first-use topic hierarchy and publication are durable with platform-correc
     assert.equal((await stat(path)).isDirectory(), true);
     await assert.doesNotReject(() => syncDirectoryDurable(path));
   }
-  assert.equal(await readFile(join(root, "step_archive", "TOPIC", "TOPIC.md"), "utf8"), "durable topic\n");
+  assert.ok((await readFile(join(root, "step_archive", "TOPIC", "TOPIC.md"), "utf8")).includes("durable topic\n"));
 
   const flags = [];
   const openDirectory = async (path, flag) => {
@@ -1191,7 +1192,11 @@ test("concurrent initialization serializes and never mixes topic with workflow s
   const state = await readState(root);
   const topicPath = join(root, "step_archive", "TOPIC", "TOPIC.md");
   assert.equal(state.topic_sha256, await hashFile(topicPath));
-  assert.ok(["topic A\n", "topic B\n"].includes(await readFile(topicPath, "utf8")));
+  const frozenTopic = await readFile(topicPath, "utf8");
+  const winningTopic = state.workflow_id === "workflow-a" ? "topic A\n" : "topic B\n";
+  const losingTopic = state.workflow_id === "workflow-a" ? "topic B\n" : "topic A\n";
+  assert.ok(frozenTopic.includes(winningTopic));
+  assert.equal(frozenTopic.includes(losingTopic), false);
 });
 
 test("begin consumes exactly the current marker and creates one unique current attempt", async () => {

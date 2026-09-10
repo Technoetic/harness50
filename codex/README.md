@@ -45,6 +45,19 @@ The published repository includes both Claude Code and Codex adapters. 어느 �
 
 `$webapp`은 상태 관리자가 선택한 현재 단계 하나만 실행합니다. Stop 후크가 신뢰된 경우에만 다음 턴을 위한 단일 마커를 발급하며, 신뢰되지 않았거나 비활성인 경우 체인은 안전하게 멈춥니다.
 
+한 줄 요청만으로 시작할 수 있습니다. `init`이 여섯 주제 필드와 명시된 기본값을 준비하고
+전체 원문을 보존한 뒤 해시를 고정합니다. 사용자가 내부 필드 이름을 작성할 필요는 없습니다.
+한 턴의 단계가 끝나면 신뢰된 Stop 후크가 다음 턴을 이어주므로 매 단계 재입력하는 흐름이 아닙니다.
+
+구버전에서 한 줄 입력이 그대로 고정돼 Step 1이 실패했다면 `$webapp resume`은 먼저
+`repair-topic --workspace "<project-root>"`를 적용할 수 있습니다. 이 명령은 새 주제를
+받지 않고 기존 해시와 원문을 검증해 누락된 항목만 보완합니다. 원문은 백업으로 남고
+워크플로는 1단계의 일시정지 상태가 되며, 이어서 `resume`으로 새 시도를 시작합니다.
+완료 기록이나 가져온 이력이 있거나 실행 중인 시도가 미완료이면 복구하지 않습니다.
+이 조건을 만족하는 첫 단계 재개에서는 TOPIC의 겉모양과 관계없이 관리자에게 복구 여부를
+판단하게 합니다. 복구 중 TOPIC 저장 직후 중단돼도 재시도로 상태 해시를 연결할 수 있습니다.
+정상적인 기존 TOPIC은 변경하지 않으며, 실제 호스트의 후크 신뢰 설정도 변경하지 않습니다.
+
 ## Migration and reset / 마이그레이션과 리셋
 
 - Only when no Codex workflow exists, existing Claude progress may be imported read-only once.

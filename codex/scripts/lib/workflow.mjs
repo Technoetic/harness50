@@ -7,6 +7,7 @@ import {
   readFile,
   readdir,
   realpath,
+  rename,
   unlink
 } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
@@ -32,6 +33,7 @@ import {
   writeReceiptExclusive
 } from "./receipts.mjs";
 import { createInitialState, validateState } from "./schema.mjs";
+import { prepareTopicContract } from "./topic.mjs";
 import {
   appendEvent,
   archiveActiveState,
@@ -557,7 +559,7 @@ async function writeTopicExclusive(workspaceRoot, topic) {
   await ensureDurableDirectory(workspaceRoot, archiveRoot);
   const topicDirectoryIdentity = await ensureDurableDirectory(workspaceRoot, topicDirectory);
   await assertPhysicalComponents(workspaceRoot, [topicDirectory, topicPath]);
-  const bytes = Buffer.from(topic.endsWith("\n") ? topic : `${topic}\n`, "utf8");
+  const bytes = Buffer.from(topic, "utf8");
   const temporaryPath = join(topicDirectory, `.${basename(topicPath)}.${process.pid}.${randomUUID()}.tmp`);
   let handle;
   let temporaryExists = false;
@@ -607,6 +609,205 @@ async function writeTopicExclusive(workspaceRoot, topic) {
   }
 }
 
+async function readRepairFile(workspaceRoot, path, { optional = false, expectedLinks = 1n } = {}) {
+  await assertPhysicalComponents(workspaceRoot, [path]);
+  let before;
+  try {
+    before = await lstat(path, { bigint: true });
+  } catch (error) {
+    if (optional && error?.code === "ENOENT") return null;
+    throw error;
+  }
+  const regular = stat => stat.isFile() && !stat.isSymbolicLink() && stat.nlink === expectedLinks;
+  if (!regular(before)) fail("WORKSPACE_PATH_UNSAFE", "topic repair requires unaliased regular files");
+  const handle = await open(path, "r");
+  try {
+    const opened = await handle.stat({ bigint: true });
+    if (!regular(opened) || !sameNode(before, opened)) {
+      fail("WORKSPACE_PATH_UNSAFE", "topic repair file changed before reading");
+    }
+    const bytes = await handle.readFile();
+    const after = await handle.stat({ bigint: true });
+    const current = await lstat(path, { bigint: true });
+    if (!regular(after) || !regular(current) || !sameNode(opened, current)) {
+      fail("WORKSPACE_PATH_UNSAFE", "topic repair file changed while reading");
+    }
+    if (opened.size !== after.size || opened.mtimeNs !== after.mtimeNs || opened.ctimeNs !== after.ctimeNs) {
+      fail("TOPIC_SOURCE_CHANGED", "topic repair file contents changed while reading");
+    }
+    return { bytes, identity: after };
+  } finally {
+    await handle.close();
+  }
+}
+
+async function readRepairBackup(workspaceRoot, path) {
+  await assertPhysicalComponents(workspaceRoot, [path]);
+  const identity = await lstat(path, { bigint: true }).catch(error => {
+    if (error?.code === "ENOENT") return null;
+    throw error;
+  });
+  if (identity === null || identity.nlink !== 2n) {
+    return readRepairFile(workspaceRoot, path, { optional: true });
+  }
+  // A crash after exclusive publication can leave exactly the manager's two
+  // names for one inode. An alias outside this directory cannot meet this test.
+  const backup = await readRepairFile(workspaceRoot, path, { expectedLinks: 2n });
+  const prefix = `.${basename(path)}.`;
+  const candidates = [];
+  for (const name of await readdir(dirname(path))) {
+    if (!name.startsWith(prefix) || !/^[1-9][0-9]*\.[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}\.tmp$/.test(name.slice(prefix.length))) continue;
+    const candidatePath = join(dirname(path), name);
+    const candidate = await lstat(candidatePath, { bigint: true });
+    if (sameNode(candidate, backup.identity)) candidates.push(candidatePath);
+  }
+  if (candidates.length !== 1) {
+    fail("WORKSPACE_PATH_UNSAFE", "topic backup aliases are not an interrupted exclusive publication");
+  }
+  const temporary = await readRepairFile(workspaceRoot, candidates[0], { expectedLinks: 2n });
+  if (!sameNode(temporary.identity, backup.identity) || !temporary.bytes.equals(backup.bytes)) {
+    fail("WORKSPACE_PATH_UNSAFE", "topic backup temporary changed during recovery");
+  }
+  return { ...backup, temporary_path: candidates[0] };
+}
+
+async function publishRepairFile(paths, guard, path, bytes, expected = null) {
+  const directory = dirname(path);
+  const temporaryPath = join(directory, `.${basename(path)}.${process.pid}.${randomUUID()}.tmp`);
+  let handle;
+  let temporaryIdentity;
+  let temporaryExists = false;
+  try {
+    await assertMutationGuard(guard, [path, temporaryPath]);
+    handle = await open(temporaryPath, "wx", 0o600);
+    temporaryExists = true;
+    await handle.writeFile(bytes);
+    await handle.sync();
+    temporaryIdentity = await handle.stat({ bigint: true });
+    await handle.close();
+    handle = undefined;
+    await assertMutationGuard(guard, [path, temporaryPath]);
+    const temporary = await readRepairFile(paths.workspaceRoot, temporaryPath);
+    if (!sameNode(temporaryIdentity, temporary.identity) || !temporary.bytes.equals(bytes)) {
+      fail("WORKSPACE_PATH_UNSAFE", "topic repair temporary changed before publication");
+    }
+    if (expected === null) {
+      // Exclusive publication never replaces an existing original backup.
+      await link(temporaryPath, path);
+      await unlink(temporaryPath);
+      temporaryExists = false;
+    } else {
+      const current = await readRepairFile(paths.workspaceRoot, path);
+      if (!sameNode(current.identity, expected.identity) || !current.bytes.equals(expected.bytes)) {
+        fail("TOPIC_SOURCE_CHANGED", "topic changed before repair publication");
+      }
+      await assertMutationGuard(guard, [path, temporaryPath]);
+      await rename(temporaryPath, path);
+      temporaryExists = false;
+    }
+    await syncDirectoryDurable(directory);
+    const published = await readRepairFile(paths.workspaceRoot, path);
+    if (!sameNode(temporaryIdentity, published.identity) || !published.bytes.equals(bytes)) {
+      fail("WORKSPACE_PATH_UNSAFE", "topic repair publication changed unexpectedly");
+    }
+    return published;
+  } finally {
+    await handle?.close();
+    if (temporaryExists) {
+      await assertMutationGuard(guard, [temporaryPath]);
+      await unlink(temporaryPath).catch(error => {
+        if (error?.code !== "ENOENT") throw error;
+      });
+    }
+  }
+}
+
+export async function repairTopicWorkflow({ workspaceRoot, now = () => new Date() } = {}) {
+  return withMutation(workspaceRoot, now, async (paths, clock, guard) => {
+    const before = assertMonotonicClock(await requireState(paths.workspaceRoot, guard), clock);
+    if (before.imported_from !== null || before.current_step !== 1 || before.completed_steps.length !== 0) {
+      fail("TOPIC_REPAIR_STATE", "topic repair requires a native workflow before Step 1 completion");
+    }
+    if (before.current_attempt !== null && !before.current_attempt.failure_recorded) {
+      fail("ATTEMPT_ACTIVE", "an unfinished attempt must not have its input repaired");
+    }
+    const receiptEntries = await guardedOperation(guard, [paths.receiptsDir], () => readdir(paths.receiptsDir).catch(error => {
+      if (error?.code === "ENOENT") return [];
+      throw error;
+    }));
+    if (receiptEntries.some(name => /^step[0-9]{3}\.json$/i.test(name))) {
+      fail("TOPIC_REPAIR_RECEIPTS", "durable or redirected completion entries prevent topic repair");
+    }
+    const receipts = await guardedReadReceipts(paths.workspaceRoot, guard);
+    if (receipts.length !== 0) fail("TOPIC_REPAIR_RECEIPTS", "durable completions prevent topic repair");
+    const topicPath = join(paths.workspaceRoot, ...TOPIC_RELATIVE_PATH.split("/"));
+    const backupPath = join(paths.backupsDir, `topic-${before.topic_sha256}.md`);
+    const current = await guardedOperation(guard, [topicPath], () => readRepairFile(paths.workspaceRoot, topicPath));
+    const backup = await guardedOperation(guard, [backupPath], () => readRepairBackup(paths.workspaceRoot, backupPath));
+    const original = backup?.bytes ?? current.bytes;
+    if (createHash("sha256").update(original).digest("hex") !== before.topic_sha256) {
+      fail("TOPIC_SOURCE_CHANGED", "the original topic no longer matches its pinned digest");
+    }
+    const originalText = original.toString("utf8");
+    if (!Buffer.from(originalText, "utf8").equals(original) || originalText.trim() === "") {
+      fail("TOPIC_INVALID", "topic repair requires nonempty UTF-8 source bytes");
+    }
+    const repaired = Buffer.from(prepareTopicContract(originalText), "utf8");
+    if (!current.bytes.equals(original) && !(backup && current.bytes.equals(repaired))) {
+      fail("TOPIC_SOURCE_CHANGED", "current topic is neither the pinned source nor its exact repair");
+    }
+    if (repaired.equals(original)) return { repaired: false, state: before };
+
+    const state = validateState({
+      ...before,
+      status: "paused",
+      topic_sha256: createHash("sha256").update(repaired).digest("hex"),
+      current_attempt: null,
+      continuation: null,
+      stop_delivery: null,
+      owner: null,
+      blocked_reason: null,
+      updated_at: clock.iso
+    });
+    const prepared = prepareEventBatch([{
+      kind: "topic_repaired", workflow_id: before.workflow_id, step: 1,
+      status: "paused", source_preserved: true
+    }], { now: clock.now });
+    return withPinnedEventBatch(paths.workspaceRoot, prepared, async () => {
+      // Pin both publication directories before adding any backup or changing the input.
+      for (const directory of [dirname(topicPath), paths.backupsDir]) {
+        const identity = await guardedOperation(guard, [directory], () => ensureDurableDirectory(paths.workspaceRoot, directory));
+        guard.identities.set(directory, identity);
+      }
+      if (backup === null) {
+        await guardedOperation(guard, [backupPath], () => publishRepairFile(paths, guard, backupPath, original));
+      } else if (backup.temporary_path) {
+        await guardedOperation(guard, [backupPath, backup.temporary_path], async () => {
+          const pending = await readRepairBackup(paths.workspaceRoot, backupPath);
+          if (pending?.temporary_path !== backup.temporary_path || !pending.bytes.equals(original)) {
+            fail("TOPIC_SOURCE_CHANGED", "interrupted original backup changed before recovery");
+          }
+          await unlink(pending.temporary_path);
+          await syncDirectoryDurable(paths.backupsDir);
+        });
+      }
+      const verifyBackup = async () => {
+        const preserved = await guardedOperation(guard, [backupPath], () => readRepairFile(paths.workspaceRoot, backupPath));
+        if (!preserved.bytes.equals(original)) fail("TOPIC_SOURCE_CHANGED", "original topic backup changed during repair");
+      };
+      await verifyBackup();
+      if (!current.bytes.equals(repaired)) {
+        await guardedOperation(guard, [topicPath], () => publishRepairFile(paths, guard, topicPath, repaired, current));
+      }
+      await verifyBackup();
+      const published = await guardedOperation(guard, [topicPath], () => readRepairFile(paths.workspaceRoot, topicPath));
+      if (!published.bytes.equals(repaired)) fail("TOPIC_SOURCE_CHANGED", "repaired topic changed before state publication");
+      const written = await guardedWriteState(paths.workspaceRoot, state, guard);
+      return { repaired: true, state: written, backup_path: backupPath };
+    });
+  });
+}
+
 export async function initWorkflow({
   workspaceRoot,
   topic,
@@ -614,6 +815,7 @@ export async function initWorkflow({
   idFactory = randomUUID
 } = {}) {
   requireText(topic, "topic", "TOPIC_INVALID");
+  const preparedTopic = prepareTopicContract(topic);
   requireFactory(idFactory);
   return withMutation(workspaceRoot, now, async (paths, clock, guard) => {
     await guardedOperation(
@@ -628,7 +830,7 @@ export async function initWorkflow({
     const createdTopic = await guardedOperation(
       guard,
       [topicPath],
-      () => writeTopicExclusive(paths.workspaceRoot, topic)
+      () => writeTopicExclusive(paths.workspaceRoot, preparedTopic)
     );
     let state = createInitialState({
       workflowId,
@@ -1591,6 +1793,9 @@ export async function showWorkflow({ workspaceRoot } = {}) {
     current_step: state.current_step,
     completed_count: state.completed_steps.length,
     topic_path: state.topic_path,
+    topic_repair_eligible: state.imported_from === null && state.current_step === 1 &&
+      state.completed_steps.length === 0 && receipts.length === 0 &&
+      (state.current_attempt === null || state.current_attempt.failure_recorded),
     owner: state.owner,
     continuation_available: state.continuation !== null,
     imported_from: state.imported_from,

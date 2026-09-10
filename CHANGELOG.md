@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.4.1 — 2026-09-11
+
+- Prepare the six-field topic contract from short or partial Codex init input before freezing its hash. Preserve original requests, explicit values, and complete contract bytes; identify generated defaults without inventing user decisions.
+- Document the stdin JSON init command and align Step 1 with generated defaults. Preserve immutable topic handling during normal execution, import, and reset.
+- Add regression coverage for short Korean requests, partial and empty fields, complete contracts, whitespace rejection, and non-overwriting initialization.
+- Add bounded `repair-topic` recovery for native workflows stuck before Step 1 completion. Preserve original bytes and audit history, verify the pinned hash, and require a new resumed attempt without advancing or fabricating completion.
+- Clarify that a trusted Stop hook continues one user request across later turns. Exercise all 50 manager/hook handoffs in an isolated scheduler test; this does not attest to a live host or a finished product.
+
 ## 2.4.0 — 2026-09-10
 
 - Align Claude Step 49 and evaluator guidance with bounded, pass-only mandatory acceptance: retain unresolved findings as incomplete and keep preference scores advisory. Failed workers no longer emit completion receipts.

@@ -411,7 +411,8 @@ test("all ten commands dispatch to their workflow operations with literal struct
   const initialized = parseSuccess(await runCli([
     "init", "--workspace", root, "--input", "-"
   ], { input: { topic } }));
-  assert.equal(await readFile(join(root, "step_archive", "TOPIC", "TOPIC.md"), "utf8"), topic);
+  const frozenTopic = await readFile(join(root, "step_archive", "TOPIC", "TOPIC.md"), "utf8");
+  assert.ok(frozenTopic.includes(topic), "the literal request survives topic preparation");
   assert.equal(initialized.current_step, 1);
   await writeFile(join(root, "step_archive", "step001_preflight.md"), "preflight passed\n", "utf8");
 
