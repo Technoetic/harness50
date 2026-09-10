@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Align Claude Step 49 and evaluator guidance with bounded, pass-only mandatory acceptance: retain unresolved findings as incomplete and keep preference scores advisory. Failed workers no longer emit completion receipts.
+- Add a shared `qa-report.mjs` snapshot/record/inspect helper and connect it to relevant Claude and Codex QA attempts. Carry sanitized observations and next checks into retries without changing workflow state or metadata-only events.
+- Bind mandatory outcomes to an explicit candidate file inventory and hashed evidence. Preserve immutable round reports; changed or missing evidence clears current preservation claims. Reports supplement existing gates and do not attest to execution, verifier identity or undeclared project files.
+
 ## 2.3.2 — 2026-09-07
 
 - Make Step 44 a client-side routing checkpoint without requiring HTML component extraction. A single HTML can contain the routed screen regions directly.

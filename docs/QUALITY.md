@@ -79,6 +79,17 @@ Historical completed records and Codex receipts retain their recovery semantics.
 
 Codex completion independently validates final HTML structure and UTF-8 from the same stable handle it hashes. Submitted command results, quality reports and human inspection claims are local evidence, not signed attestations against a process that can rewrite its own project. Do not describe them as independent live-model benchmark results.
 
+## QA feedback between attempts
+
+Use the shared [QA report protocol](QA-REPORTS.md) to carry sanitized failed checks
+and next actions between Claude and Codex attempts. Both hosts inspect the current
+step's report before a relevant retry, snapshot explicit candidate files after
+the build and before QA, then record that round before completion or failure
+handoff. Changed candidate or evidence files make prior success claims stale.
+The report does not run checks, discover missing requirements, change workflow
+state or replace measured quality/browser evidence. Failed, missing and
+unexecuted required checks remain incomplete even when a retry limit is reached.
+
 ## Release verification and product evaluation
 
 `npm test` covers adapter/state/security contracts. `npm run test:browser` checks working and deliberately broken HTML fixtures in a real browser. Rating real generated tutorials also requires multiple topics, repeated full runs, cost/latency records and user evaluation. This release does not fabricate those results.

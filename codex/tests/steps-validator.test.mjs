@@ -4377,7 +4377,7 @@ const EXPECTED_E2E_ROWS = [
     phase: "e2e",
     source: "assets/steps/step049.md",
     target: "codex/assets/steps/step049.md",
-    source_sha256: "9e8ea302a121b9ed305bbb4487e652f15990452ee1e2edd343e00ac99ddd67af",
+    source_sha256: "efa6a33e312809cac66523dd0313a45c937cf4cc856fb7eb75dd632d5e21a124",
     inputs: [
       "step_archive/step030_레이아웃설계_chunk1.md",
       "step_archive/step030_전체설계_chunk1.md",
@@ -4486,7 +4486,7 @@ test("e2e source hashes bind reviewed source steps 045 through 050", async () =>
     step046: "3233bc7e414738a66a63d94df16dbfdee69c6002505c5d70b320fa0f3061da0b",
     step047: "447c57b41a58bb991a3ed7d589ef96c3dda393264de7b6d358c50a5ab3d64339",
     step048: "31335bf010b806da9ad4faa9a37faa7a40884b309dc43069cea0b397f3b92a78",
-    step049: "9e8ea302a121b9ed305bbb4487e652f15990452ee1e2edd343e00ac99ddd67af",
+    step049: "efa6a33e312809cac66523dd0313a45c937cf4cc856fb7eb75dd632d5e21a124",
     step050: "859e4fb6a17b4f4c7f6b67e2c3753ee1289662151b7f54387ff597bd4c3b920d"
   });
 });
