@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.4.0 — 2026-09-10
 
 - Align Claude Step 49 and evaluator guidance with bounded, pass-only mandatory acceptance: retain unresolved findings as incomplete and keep preference scores advisory. Failed workers no longer emit completion receipts.
 - Add a shared `qa-report.mjs` snapshot/record/inspect helper and connect it to relevant Claude and Codex QA attempts. Carry sanitized observations and next checks into retries without changing workflow state or metadata-only events.
