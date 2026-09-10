@@ -43,6 +43,8 @@ Codex does not provide a `/webapp` slash command. Codex에서 기존 작업을 �
 
 플러그인 이름이 표시되는 Codex에서는 `$harness50:webapp`, `$harness50:harness50-status`, `$harness50:harness50-reset`을 선택합니다. 짧은 이름과 같은 제어 요청으로 처리됩니다.
 
+Codex의 새 작업은 한 줄 주제로 시작할 수 있습니다. 초기화 관리자가 원문과 명시 조건을 보존하면서 여섯 필수 주제 항목을 준비하고, 미지정 항목만 기본값으로 표시한 뒤 해시를 고정합니다. 완성된 Markdown/YAML 주제는 바이트 그대로 보존하며, 기존 workflow의 주제는 변경하지 않습니다.
+
 ## Codex installation / 설치
 
 ### Local checkout

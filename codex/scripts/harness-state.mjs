@@ -11,6 +11,7 @@ import {
   initWorkflow,
   pauseWorkflow,
   reconcileWorkflow,
+  repairTopicWorkflow,
   resetWorkflow,
   resumeWorkflow,
   showWorkflow
@@ -28,6 +29,7 @@ const COMMANDS = new Set([
   "pause",
   "resume",
   "reconcile",
+  "repair-topic",
   "reset"
 ]);
 const KNOWN_FLAGS = new Set([
@@ -60,6 +62,7 @@ const COMMAND_FLAGS = new Map([
   ["pause", { allowed: ["workspace", "reason"], required: ["workspace", "reason"] }],
   ["resume", { allowed: ["workspace", "session"], required: ["workspace"] }],
   ["reconcile", { allowed: ["workspace"], required: ["workspace"] }],
+  ["repair-topic", { allowed: ["workspace"], required: ["workspace"] }],
   ["reset", { allowed: ["workspace"], required: ["workspace"] }]
 ]);
 const INPUT_COMMANDS = new Set(["init", "begin", "complete", "fail"]);
@@ -91,6 +94,7 @@ const OPERATIONS = Object.freeze({
   pauseWorkflow,
   resumeWorkflow,
   reconcileWorkflow,
+  repairTopicWorkflow,
   resetWorkflow
 });
 
@@ -243,6 +247,8 @@ export async function dispatch(command, flags, input, operations = OPERATIONS) {
       return operations.resumeWorkflow({ workspaceRoot, sessionId: flags.session ?? null });
     case "reconcile":
       return operations.reconcileWorkflow({ workspaceRoot });
+    case "repair-topic":
+      return operations.repairTopicWorkflow({ workspaceRoot });
     case "reset":
       return operations.resetWorkflow({ workspaceRoot });
     default:
