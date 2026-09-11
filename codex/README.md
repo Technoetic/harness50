@@ -43,11 +43,22 @@ The published repository includes both Claude Code and Codex adapters. 어느 �
 - Submitted command evidence is validated only as a string and exit status; the Harness50 runtime never executes that submitted command.
 - The guard is a bounded, deny-only defense, not a shell sandbox; benign commands are never approved by the hook and still follow normal Codex permissions.
 
-`$webapp`은 상태 관리자가 선택한 현재 단계 하나만 실행합니다. Stop 후크가 신뢰된 경우에만 다음 턴을 위한 단일 마커를 발급하며, 신뢰되지 않았거나 비활성인 경우 체인은 안전하게 멈춥니다.
+`$webapp <주제>` 한 번으로 현재 대화에서 순차 실행을 시작합니다. 한 작업 단위에서는
+상태 관리자가 선택한 단계 하나만 수행하고, 증거를 제출해 `complete`가 성공하면 반환된
+현재 단계와 마커로 다음 작업 단위를 바로 시작합니다. 중간 완료는 진행 메시지로 알리며
+단계마다 최종 응답을 보내거나 재입력을 요구하지 않습니다. 같은 주제로 기존 작업이 있으면
+완료 기록을 보존한 채 재개 절차를 수행합니다.
 
 한 줄 요청만으로 시작할 수 있습니다. `init`이 여섯 주제 필드와 명시된 기본값을 준비하고
 전체 원문을 보존한 뒤 해시를 고정합니다. 사용자가 내부 필드 이름을 작성할 필요는 없습니다.
-한 턴의 단계가 끝나면 신뢰된 Stop 후크가 다음 턴을 이어주므로 매 단계 재입력하는 흐름이 아닙니다.
+현재 대화에서 진행하는 데 Stop 후크는 필요하지 않습니다. 훅을 실행하거나 신뢰 설정을
+바꾸는 대신 기존 상태 관리자의 정식 명령만 사용합니다. 전체 완료, 사용자 일시정지,
+실제 권한·외부 입력 대기, 관리자 차단 상태에서는 멈춥니다. 복구 가능한 실패는 같은
+단계에서 새 마커로 재시도하되, 연속 3회 실패 제한을 `resume`으로 초기화하지 않습니다.
+외부 입력 대기로 대화를 끝내야 하면 실행 중인 상태를 `pause`로 저장해 같은 대기의
+자동 반복을 막습니다. 현재 대화에서 처리 중인 일반 도구 권한 확인은 그대로 기다립니다.
+호스트가 대화를 강제로 종료한 뒤의 자동 재개는 별도이며, 신뢰된 Stop 후크와 실제
+호스트 전달이 필요합니다. 앱 종료·사용량 제한 이후의 무인 재시작을 보장하지 않습니다.
 
 구버전에서 한 줄 입력이 그대로 고정돼 Step 1이 실패했다면 `$webapp resume`은 먼저
 `repair-topic --workspace "<project-root>"`를 적용할 수 있습니다. 이 명령은 새 주제를
@@ -66,6 +77,8 @@ The published repository includes both Claude Code and Codex adapters. 어느 �
 - Reset preserves Claude progress, TOPIC, shared outputs, project source, and application source.
 
 가져온 Claude 완료 기록은 `imported`, Codex가 새로 검증한 완료 기록은 `codex_verified`로 구분됩니다. `$harness50-reset`은 복구 가능한 백업 경로를 보고하고 자동으로 새 워크플로를 시작하지 않습니다.
+가져오기나 영수증 복구 결과가 이미 `completed`라면 이 구분을 유지해 결과를 보고하며,
+완료된 작업에 다시 `resume`을 호출하지 않습니다.
 
 ## Hook trust gate / 후크 신뢰 게이트
 
@@ -74,13 +87,47 @@ The published repository includes both Claude Code and Codex adapters. 어느 �
 3. Confirm that no approval hook is present, then manually trust only those exact current definitions.
 4. Changed hook hashes require review and manual trust again; never bypass or automate this trust step.
 
-확인할 세 스킬은 `$webapp`, `$harness50-status`, `$harness50-reset`입니다. Local installation stops at this trust gate until the user confirms the review. 이 확인 전에는 설치 자동화가 `$webapp`을 실행하거나 신뢰를 대신 처리해서는 안 됩니다.
+확인할 세 스킬은 `$webapp`, `$harness50-status`, `$harness50-reset`입니다. Hook execution stops at this trust gate until the user confirms the review. 설치 자동화가 훅 신뢰를 대신 처리해서는 안 됩니다. 스킬의 현재 대화 내 순차 실행은 훅을 실행하지 않으므로 이 신뢰 조작을 요구하지 않습니다.
+
+### When the workflow waits after every step / 매 단계 대기할 때
+
+이전 스킬은 단계마다 종료하고 Stop 후크를 기다렸기 때문에, 후크가 신뢰되지 않으면
+매 단계 대기했습니다. 최신 스킬은 성공한 작업 단위 뒤 같은 대화에서 계속 진행합니다.
+업데이트 후 새 대화에서 스킬을 불러오고 `$webapp resume`으로 보존된 작업을 이어갈 수 있습니다.
+
+An enabled plugin and `features.hooks = true` do not prove that its hooks can run.
+An enabled hook marked `untrusted` is skipped. This prevents hook-based scheduling
+after a real turn ending, not the active-turn execution loop. For that optional
+cross-turn recovery, inspect Harness50's four current definitions in `/hooks` and
+review and trust them manually. Repeated `$webapp resume` commands do not repair
+missing hook trust. Never reset a healthy workflow to address this problem.
+
+For read-only diagnostics, the installed app-server protocol exposes `hooks/list`
+with `cwds` set to the project directory. After the normal `initialize`/`initialized`
+handshake, inspect `pluginId`, `eventName`, `enabled`, `trustStatus`, `warnings`, and
+`errors`. A fresh app-server query reports current configuration; it does not prove
+what an already-running IDE process loaded or whether a Stop event was delivered.
+Do not invoke trust-changing RPCs or execute hooks as part of this inspection.
+
+The healthy cross-turn fallback is: an evidenced checkpoint, a synchronous Stop hook returning
+`decision: "block"` with the continuation marker, and the host submitting that exact
+marker as the next prompt. Observe a real subsequent turn before claiming that
+automatic continuation works in the current host. If all hooks are trusted and
+enabled but no follow-up arrives, investigate hook errors and host delivery rather
+than assuming the IDE cannot support hooks.
+
+`resume` also supports a running workflow that already has a pending continuation.
+It preserves completed steps and TOPIC, issues a fresh marker, and invalidates old
+markers without requiring a preliminary `pause`.
+
+공식 동작과 후크 신뢰 절차: [Codex hooks](https://learn.chatgpt.com/docs/hooks).
 
 ## Host compatibility / 호스트 호환성
 
 Claude Code keeps its slash commands; version 2.2 repairs installed hooks and limits automatic approval to eligible project edits and WebSearch. Codex는 자동 승인하지 않으며 기존 영수증·마이그레이션 규칙을 유지합니다.
 
-The full continuation lifecycle requires Codex CLI hooks; other hosts may discover the skills but must not claim continuation-hook support.
+Automatic continuation after an actual host turn ends requires enabled, trusted Codex hooks; active-turn execution does not.
+Skill discovery alone does not prove that the current host delivers continuation events.
 
 패키지 진입점은 [Codex manifest](../.codex-plugin/plugin.json), 신뢰 검토 대상은 [hook definition](hooks/hooks.json), 실행 절차는 [`skills/`](skills/)에서 확인할 수 있습니다.
 

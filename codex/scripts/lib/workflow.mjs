@@ -1247,7 +1247,8 @@ export async function resumeWorkflow({
       ...state,
       status: "running",
       current_attempt: null,
-      stop_delivery: null,
+      // A pending marker must keep its delivery until transferOwner replaces both.
+      stop_delivery: state.continuation === null ? null : state.stop_delivery,
       blocked_reason: null,
       consecutive_failures: 0,
       completed_at: null,

@@ -13,8 +13,12 @@ Codex target.
   Codex-only `step_archive/.harness50-codex/` path as appropriate.
 - Do not use transcripts as completion evidence or derive completion by
   parsing transcripts.
-- Do not directly chain to the next step; continuation is owned by Codex
-  workflow state and receipts.
+- A step ends its own work unit after submitting evidence. The webapp orchestrator
+  uses only the manager's successful completion response to select the next work
+  unit in the current turn; it never infers a successor or skips acceptance.
+- Step-local instructions to stop at the current step return control to that
+  orchestrator. User pause, pending permission, external blockers and the manager's
+  blocked state still stop execution. Trust remains required to execute hooks.
 - Remove stale references to steps 69, 81, 84, 104, and 107.
 - Do not depend on retired validator or checker scripts. Express validation
   as a current command, artifact, or deterministic check instead.

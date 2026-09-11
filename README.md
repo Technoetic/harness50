@@ -45,6 +45,12 @@ Codex does not provide a `/webapp` slash command. Codex에서 기존 작업을 �
 
 Codex의 새 작업은 한 줄 주제로 시작할 수 있습니다. 초기화 관리자가 원문과 명시 조건을 보존하면서 여섯 필수 주제 항목을 준비하고, 미지정 항목만 기본값으로 표시한 뒤 해시를 고정합니다. 완성된 Markdown/YAML 주제는 바이트 그대로 보존하며, 기존 workflow의 주제는 변경하지 않습니다.
 
+`$harness50:webapp <주제>`를 한 번 입력하면 현재 대화에서 검증된 단계를 순서대로 진행합니다.
+각 단계의 증거와 완료 기록을 저장한 뒤 상태 관리자가 반환한 다음 단계로 바로 이어갑니다.
+단계 완료 때마다 최종 응답이나 추가 `resume` 입력을 요구하지 않습니다. 현재 대화 내 실행은
+Stop 후크 없이 동작하며, 전체 완료·사용자 일시정지·실제 입력 대기·차단 상태에서 멈춥니다.
+같은 주제의 기존 작업은 보존한 채 재개합니다. 상세 동작은 [Codex 안내서](codex/README.md)를 참고하세요.
+
 ## Codex installation / 설치
 
 ### Local checkout
@@ -65,7 +71,7 @@ codex plugin marketplace add Technoetic/harness50
 codex plugin add harness50@harness50
 ```
 
-The published repository includes both Claude Code and Codex adapters. 설치 후에는 새 Codex 세션을 열고 아래 신뢰 게이트를 완료해야 합니다.
+The published repository includes both Claude Code and Codex adapters. 설치 후에는 새 Codex 세션을 엽니다. 훅을 통한 턴 간 자동 재개를 사용하려면 아래 신뢰 게이트를 완료해야 합니다.
 
 ## Permissions and continuation / 권한과 이어가기
 
@@ -91,13 +97,14 @@ The published repository includes both Claude Code and Codex adapters. 설치 �
 3. Confirm that no approval hook is present, then manually trust only those exact current definitions.
 4. Changed hook hashes require review and manual trust again; never bypass or automate this trust step.
 
-Local installation stops at this trust gate until the user confirms the review. 신뢰 전에는 Codex가 플러그인 후크를 건너뛰므로 `$webapp` 실행 검증도 그 뒤에 진행합니다.
+Hook execution stops at this trust gate until the user confirms the review. 신뢰 전에는 Codex가 플러그인 후크를 건너뜁니다. 스킬의 현재 대화 내 순차 실행은 후크를 실행하지 않으므로 가능하며, 훅을 통한 실제 턴 간 재개 검증은 신뢰 검토 뒤에 진행합니다.
 
 ## Host compatibility / 호스트 호환성
 
 Claude Code keeps its slash commands; version 2.2 repairs installed hooks and limits automatic approval to eligible project edits and WebSearch. Bash와 WebFetch는 정상 권한 확인을 거칩니다. 완료·일시정지·손상된 진행 상태에서는 자동 승인하지 않습니다.
 
-The full continuation lifecycle requires Codex CLI hooks; other hosts may discover the skills but must not claim continuation-hook support.
+Automatic continuation after an actual host turn ends requires enabled, trusted Codex hooks; active-turn execution does not.
+Skill discovery alone does not prove that the current host delivers continuation events. 앱 종료나 사용량 제한 뒤의 무인 재시작을 보장하지 않습니다.
 
 ## 2.2 실행 신뢰성과 품질 검증
 

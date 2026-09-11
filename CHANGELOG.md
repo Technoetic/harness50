@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.4.2 — 2026-09-12
+
+- Preserve the installed Codex continuous-execution fixes: process successive manager-selected work units within the active turn, and keep a pending continuation paired with its Stop delivery while resuming. Existing permissions, pause behavior and per-step completion gates still apply.
+- Enforce fresh measured quality reports at Codex Steps 38, 44 and 50. Bind new final completion to the current HTML, desktop/mobile screenshots and six regression categories; apply the same final regression inspection to Claude completion hooks.
+- Preserve exact replay of historical Step 5 and Step 50 receipts without weakening new completion requirements or fabricating current evidence.
+- Bound GitHub reference searches to three queries and distinguish an exhausted search with no suitable references from transport or permission failures. Carry the verified no-reference decision into downstream planning without fabricated clones.
+- Repair Step 24 research inside the current attempt with bounded supplemental rounds and an immutable manifest. Correct host-specific input paths and propagate accepted supplemental evidence into planning, design and review.
+- Revalidate the final Claude Step 29 plan after augmentation and carry its hash into Step 30. Align runner selection with tool installation and permit a justified c8 skip when an alternative supplies measured coverage.
+- Keep required Claude QA failures incomplete at Steps 39, 40, 43, 46, 47 and 48. Require local HTTP routing/fallback verification, reuse the tested URL and build hash, and distinguish pending deployment verification from completed local work.
+
+Validation includes automated contract/runtime tests, Brave browser checks, installed-copy Claude checks and Git Bash hook tests on Windows. It does not attest to native Linux/macOS execution, a live-model run of all 50 steps or a deployed application.
+
 ## 2.4.1 — 2026-09-11
 
 - Prepare the six-field topic contract from short or partial Codex init input before freezing its hash. Preserve original requests, explicit values, and complete contract bytes; identify generated defaults without inventing user decisions.
