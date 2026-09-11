@@ -1,18 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadStepContract, validateCompletionEvidence } from '../scripts/lib/acceptance.mjs';
+import { makeWorkspace } from './helpers/workspace.mjs';
 
 const pluginRoot = fileURLToPath(new URL('../../', import.meta.url));
 
 // Exercise the actual completion consumer, not prose matching. Independent research
 // review remains the source of semantic checks; the runtime binds its artifacts.
 async function fixture(t, step, disposition) {
-  const root = await mkdtemp(join(tmpdir(), 'h50-research-disposition-'));
-  t.after(() => rm(root, { recursive: true, force: true }));
+  const root = await makeWorkspace();
   const contract = await loadStepContract(pluginRoot, step);
   const evidence = [];
   for (const item of contract.acceptance.filter(item => item.required)) {
