@@ -70,6 +70,13 @@ expected와 actual을 연결한다. 파일 이름이나 metadata만으로 보았
 루프는 최대 5라운드다. `Critical` 또는 `Important` finding이 하나라도 미해결이면
 현재 단계를 차단한다. 독립 검증자가 여덟 축 전체에 `PASS`를 기록한 경우에만 완료한다.
 
+## 최종 연구 증거 사용
+
+24단계 최종 PASS 보고서 `step_archive/outputs/step024_검증_r1.md`의 보완 manifest와 통합 분석도 입력이다.
+원래 22·23단계 자료와 함께 채택한 보완 파일의 경로·SHA-256을 대조하고 필수 이미지를 실제로 연다.
+조사 축·대안이 보완되었다면 24단계 최종 분석을 따른다. 최신 기획·설계의 해당 provenance와 비교하고 기존 원본만으로 보완 결론을 대체하지 않는다.
+보완이 없으면 명시된 빈 manifest를 확인한다. 이 단계에서 새 사이트 방문이나 자료 수집을 하지 않는다.
+
 ## 완료 조건
 
 - `comparison-desktop-screenshot`: 최종 desktop 구현 capture가 저장됐다.

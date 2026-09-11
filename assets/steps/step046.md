@@ -15,6 +15,17 @@ persistence: session
 >
 > **위치**: E2E 검증 구간 (최종 게이트 step050)
 
+## QA 완료 증거 (필수)
+
+신뢰한 설치 플러그인의 `docs/QA-REPORTS.md`와 `scripts/qa-report.mjs`를 사용한다.
+각 시도 시작에 `inspect --workspace "<project-root>" --step 46`으로 이전 실패를 확인한다.
+수정과 필요한 build를 마친 뒤 검증 전에 `snapshot`을 만든다. 실제 소스·설정·검증 대상
+산출물과 본문의 모든 필수 검사(화면·viewport·상태 조합 포함)를 명시한다.
+검증자의 실제 관찰과 스크린샷·실행 결과를 `record`로 기록한 뒤 다시 `inspect`한다.
+`status=current`와 `verdict=PASS`를 모두 확인해야 완료 보고 및 다음 Step 진입이 가능하다.
+필수 실패·증거 누락·미실행·stale은 INCOMPLETE다. 수정 뒤에는 새 snapshot과 재검증이 필요하다.
+검증 전 snapshot을 검증 후 새로 만들어 과거 결과를 현재 PASS로 바꾸지 않는다.
+
 ## Step-Back
 
 실행 전에 먼저 답하라:
@@ -39,6 +50,13 @@ viewport 조합을 검증한다. 스크린샷의 화면 일치만으로 실제 �
 
 서브에이전트는 항상 haiku를 사용한다.
 
+## 검증 서버와 라우팅 입력
+
+Step 45에서 검증한 서버 실행 방법·base URL·manifest routing mode를 재사용한다.
+서버를 재시작해야 하면 같은 설정으로 시작하고 준비 상태를 확인한다. history mode는 HTTP(S)와
+SPA fallback을 유지하며 file://로 바꾸지 않는다. hash mode도 Step 45에서 검증한 serving mode를 유지한다.
+각 화면의 canonical URL을 사용하고 보고서에 base URL·mode·화면 ID를 기록한다.
+
 ## 결과 저장
 
 결과를 step_archive/screenshots/e2e/에 저장한다.
@@ -54,10 +72,10 @@ viewport 조합을 검증한다. 스크린샷의 화면 일치만으로 실제 �
 
 ## 오류 발생 시
 
-오류 발생 시 원인을 분석하고 수정한 뒤 재시도한다. 3회 재시도 후에도 실패하면 오류를 기록하고 다음 Step으로 진행한다.
+오류 발생 시 원인을 분석하고 수정한 뒤 재시도한다. 3회 재시도 후에도 실패하면 오류·미해결 항목·다음 검사를 기록하고 현재 Step을 INCOMPLETE로 인계한다. 완료 보고와 다음 Step 진입은 금지한다.
 
 
 ---
 
-이 지침을 완료한 즉시 자동으로 step047.md를 읽고 수행한다. 사용자 확인을 기다리지 않는다.
+필수 요구와 현재 검증 증거가 모두 PASS일 때만 이 지침을 완료하고 자동으로 step047.md를 읽고 수행한다. 사용자 확인을 기다리지 않는다.
 

@@ -81,7 +81,7 @@ session_prompt: |
 | Playwright | npx playwright --version | npx playwright install chromium | 필수 |
 | Biome | npx biome --version | npm i -D @biomejs/biome | 필수 |
 | Stylelint | npx stylelint --version | npm i -D stylelint | 필수 |
-| Vitest | npx vitest --version | npm i -D vitest | 필수 |
+| Vitest/Jest | package.json·lockfile 설치 현황 조사 | 6단계 선택 후 설치 | 조사 |
 | c8 | npx c8 --version | npm i -D c8 | 선택 |
 | jscpd | npx jscpd --version | npm i -D jscpd | 선택 |
 | madge | npx madge --version | npm i -D madge | 선택 |
@@ -122,6 +122,10 @@ step_archive/progress.json이 존재하면 로드하여 이전 진행 상태를 
 - 이 Step의 목표가 100% 달성되었는가? (Y/N)
 - 불확실한 부분이 있는가? (있으면 구체적으로 명시)
 - N 또는 불확실한 부분이 있으면 재실행한다. 3회 재시도 후에도 미달이면 오류 기록 후 다음 Step 진행.
+
+## 테스트 러너와 커버리지 인계
+
+1단계는 Vitest/Jest를 강제 설치하지 않는다. 6단계에서 기존 프로젝트와 빌드 근거로 러너를 선택한 다음 선택한 러너만 필수로 설치·검증한다. c8은 5단계에서도 선택 사항이다. c8의 SKIP은 커버리지 측정 면제가 아니다. 6단계의 Vitest coverage-v8 또는 Jest coverage를 사용하여 이후 품질 게이트의 실제 측정 보고서를 생성해야 한다.
 
 ---
 

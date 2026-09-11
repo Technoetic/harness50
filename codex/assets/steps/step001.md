@@ -69,7 +69,7 @@ URL 형식과 구현 backend는 별개다. HTTP(S)에서 실제 사용 가능한
 | 필수 | Playwright | `npx playwright --version` |
 | 필수 | Biome | `npx biome --version` |
 | 필수 | Stylelint | `npx stylelint --version` |
-| 필수 | Vitest | `npx vitest --version` |
+| 조사 | Vitest/Jest | `package.json`과 lockfile 설치 현황 확인; 선택·검증은 6단계 |
 | 선택 | c8 | `npx c8 --version` |
 | 선택 | jscpd | `npx jscpd --version` |
 | 선택 | madge | `npx madge --version` |
@@ -101,6 +101,10 @@ Biome 패키지 선택이 필요하면 `npx --yes --package @biomejs/biome biome
 - 비밀값을 포함하지 않은 오류 범주와 필요한 사용자 조치
 
 환경 변수 값, 인증 정보, 명령 출력에 섞인 비밀값은 보고서에 저장하지 않는다.
+
+## 테스트 러너와 커버리지 인계
+
+1단계는 Vitest/Jest를 강제 설치하지 않는다. 6단계에서 기존 프로젝트와 빌드 근거로 러너를 선택한 다음 선택한 러너만 필수로 설치·검증한다. c8은 5단계에서도 선택 사항이다. c8의 SKIP은 커버리지 측정 면제가 아니다. 6단계의 Vitest coverage-v8 또는 Jest coverage를 사용하여 이후 품질 게이트의 실제 측정 보고서를 생성해야 한다.
 
 ## 완료 조건
 

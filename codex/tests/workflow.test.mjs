@@ -1545,6 +1545,11 @@ test("exact receipt crash-gap recovery advances at and after owner lease expiry"
 
 test("Step 50 publishes its receipt before completed state", async () => {
   const root = await makeWorkspace();
+  const { prepareQuality, prepareFinalRegression } = await import('./helpers/completion-quality.mjs');
+  await mkdir(join(root, 'dist'));
+  await writeFile(join(root, 'dist/index.html'), '<html><body>Final</body></html>');
+  await prepareQuality(root);
+  await prepareFinalRegression(root);
   const pluginRoot = await makePluginFixture();
   await writeClaudeCompletedPrefix(root, 49);
   await importClaudeProgress({

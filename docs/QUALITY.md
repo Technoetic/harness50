@@ -32,7 +32,7 @@ node "<plugin-root>/scripts/quality-gate.mjs" --inspect --workspace "<project-ro
 
 Each command is bounded to two minutes and 1 MiB output. The report records exit codes without storing raw command output that could contain secrets. Diagnose failures in a normal foreground invocation. Source fingerprints exclude dependencies, Git metadata, coverage and `step_archive`; they include project configuration and final dist files. Changes require another run. Reports go to `step_archive/outputs/quality-gate.json`.
 
-Claude Stop hooks inspect saved evidence at steps 38, 44 and 50 and write `trust5_r1.md`, `trust5_r2.md` and `trust5_r3.md`. They neither execute configured commands nor download tools. Missing or failed evidence requests a repair once; an already active Stop turn is not recursively blocked. Incomplete gates must not be presented as product completion. Codex steps explicitly run the same checks through normal permissions.
+Claude Stop hooks inspect saved evidence at steps 38, 44 and 50 and write `trust5_r1.md`, `trust5_r2.md` and `trust5_r3.md`. They neither execute configured commands nor download tools. Missing or failed evidence requests a repair once; an already active Stop turn is not recursively blocked. Incomplete gates must not be presented as product completion. Codex steps explicitly run the same checks through normal permissions, and the state manager independently inspects current measured quality before accepting a new completion at 38, 44 or 50. It records the validated report digest; missing, failed or stale quality cannot create a new completion receipt. Older receipts retain their historical recovery meaning.
 
 ## Final browser output
 
@@ -71,9 +71,14 @@ use when supported. Failures return exit code 1. Review axe
 mouse and visual review for states beyond the finite route inventory. History-mode
 fallback inside the verifier does not establish that a deployment server has rewrites.
 
-Fresh completion requires version 3 evidence with both scenarios. Claude's writer inspects current
-quality and browser evidence before recording a new Step 50; its final Stop quality
-report covers both. `quality-gate.mjs --inspect-final --workspace "<project-root>"`
+Fresh completion requires version 3 evidence with both scenarios. Both hosts also
+require a current [final regression report](QA-REPORTS.md#final-candidate-regression-at-step-50)
+covering E2E, screenshots, keyboard, mouse, design and console on the same final HTML.
+Run these complete matrices after the last repair and build. Any subsequent
+candidate change invalidates that assessment and requires rerunning the matrices.
+Claude's writer inspects current quality, browser and regression evidence before
+recording a new Step 50; its final Stop quality report covers all three.
+`quality-gate.mjs --inspect-final --workspace "<project-root>"`
 performs the same read-only inspection without launching browsers or project commands.
 Historical completed records and Codex receipts retain their recovery semantics.
 
@@ -86,8 +91,9 @@ and next actions between Claude and Codex attempts. Both hosts inspect the curre
 step's report before a relevant retry, snapshot explicit candidate files after
 the build and before QA, then record that round before completion or failure
 handoff. Changed candidate or evidence files make prior success claims stale.
-The report does not run checks, discover missing requirements, change workflow
-state or replace measured quality/browser evidence. Failed, missing and
+The report does not run checks, discover product-specific requirements, change workflow
+state or replace measured quality/browser evidence. Step 50 enforces the six final
+regression categories and their final HTML binding. Failed, missing and
 unexecuted required checks remain incomplete even when a retry limit is reached.
 
 ## Release verification and product evaluation

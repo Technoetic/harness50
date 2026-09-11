@@ -1,4 +1,5 @@
 import test from "node:test";
+import { prepareSchedulerMilestone } from "./helpers/completion-quality.mjs";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
@@ -149,6 +150,7 @@ test("a native workflow completes exactly fifty Codex-verified receipts", async 
   });
   for (let step = 1; step <= 50; step += 1) {
     const started = await beginFromCurrentContinuation(root, step);
+    await prepareSchedulerMilestone(root, step);
     state = await completeStep({
       workspaceRoot: root,
       pluginRoot,
@@ -197,6 +199,7 @@ test("Claude 1 through 17 import stays read-only and resumes with Codex 18 throu
   assert.notEqual(state.continuation, null);
   for (let step = 18; step <= 50; step += 1) {
     const started = await beginFromCurrentContinuation(root, step, "handoff-session");
+    await prepareSchedulerMilestone(root, step);
     state = await completeStep({
       workspaceRoot: root,
       pluginRoot,

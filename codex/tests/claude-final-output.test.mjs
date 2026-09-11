@@ -8,6 +8,7 @@ import { makeWorkspace } from './helpers/workspace.mjs';
 import { runQualityGate } from '../../scripts/lib/quality.mjs';
 import { sha256 } from '../../scripts/lib/quality-files.mjs';
 import { passingBrowserReport } from './helpers/routing.mjs';
+import { recordPassingFinalRegression } from './helpers/final-regression.mjs';
 
 const repo = fileURLToPath(new URL('../../', import.meta.url));
 const windows = process.platform === 'win32';
@@ -65,6 +66,16 @@ test('final inspection never reruns project commands and rejects missing browser
   f.noCommands();
 });
 
+test('Claude final completion rejects missing regression matrices despite passing quality and browser evidence', async () => {
+  const f = await fixture();
+  const browser = passingBrowserReport(sha256(readFileSync(join(f.project, 'dist', 'index.html'))), f.manifest);
+  writeFileSync(join(f.project, 'step_archive', 'outputs', 'browser-output.json'), JSON.stringify(browser));
+  f.run('step-progress-writer', { last_assistant_message: 'Step 050/50 완료' });
+  assert.equal(JSON.parse(readFileSync(f.progress, 'utf8')).completed_steps.length, 49);
+  assert.match(f.run('trust5-validator'), /"decision":"block"/);
+  f.noCommands();
+});
+
 test('final Stop milestone is incomplete at Step 50 until browser evidence passes', async () => {
   const f = await fixture();
   const output = f.run('trust5-validator');
@@ -85,6 +96,7 @@ test('historical Claude Step 50 remains recorded without retroactive browser ver
 
 test('Claude final writer rejects old, incomplete and mismatched evidence, then records a valid v3 result', async () => {
   const f = await fixture();
+  await recordPassingFinalRegression(f.project);
   const reportPath = join(f.project, 'step_archive', 'outputs', 'browser-output.json');
   const valid = passingBrowserReport(sha256(readFileSync(join(f.project, 'dist', 'index.html'))), f.manifest);
   for (const mutate of [

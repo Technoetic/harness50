@@ -9,6 +9,7 @@ import { beginStep, completeStep, initWorkflow, showWorkflow } from "../scripts/
 import { readState } from "../scripts/lib/state-store.mjs";
 import { readReceipts } from "../scripts/lib/receipts.mjs";
 import { makePluginFixture, makeWorkspace } from "./helpers/workspace.mjs";
+import { prepareSchedulerMilestone } from "./helpers/completion-quality.mjs";
 
 // These are real scheduler/hook operations with isolated acceptance fixtures.
 // This does not claim that an actual product or live host completed 50 steps.
@@ -29,6 +30,7 @@ test("one short request supports all 50 verified handoffs without another human 
   for (let step = 1; step <= 50; step++) {
     assert.equal(state.current_step, step);
     const begun = await beginStep({ workspaceRoot, step, marker: state.continuation, now: now() });
+    await prepareSchedulerMilestone(workspaceRoot, step);
     state = await completeStep({
       workspaceRoot, pluginRoot, step, attemptId: begun.attempt.id, now: now(),
       summary: `Isolated scheduler fixture step ${step}`,

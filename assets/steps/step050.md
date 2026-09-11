@@ -9,7 +9,7 @@ persistence: session
 > **📐 Plan → Run → Sync** (MoAI-ADK 워크플로우)
 > - **Plan**: 본 Step의 SPEC 자동 생성 `step_archive/specs/SPEC-050.md` 를 먼저 읽고 Acceptance 기준을 확정한다.
 > - **Run**: 본문 지침대로 실행. 구현 산출물에는 `@MX:NOTE` 최소 1개 부착 (위험 시 `@MX:WARN` + `@MX:REASON`, 계약 시 `@MX:ANCHOR` + `@MX:REASON`, 미완료 시 `@MX:TODO`). MoAI mx-tag-protocol SoT 준수.
-> - **Sync**: 결과 파일 `step_archive/step050_*.md` 저장 후 1줄 완료 보고 `Step 050/50 완료`.
+> - **Sync**: 모든 최종 게이트가 PASS일 때만 결과 파일 `step_archive/step050_*.md` 저장 후 1줄 완료 보고 `Step 050/50 완료`.
 >
 > **모델 정책**: 조사·구현 서브에이전트 = **haiku** (CLAUDE.md 정책 준수). 평가 라운드만 sonnet.
 >
@@ -87,13 +87,13 @@ Playwright의 page 객체가 발생시키는 **모든 이벤트**를 수집한�
 최대 5회까지 수정하고 재검증한다. 실패 항목은 스킵해 통과시키지 않는다.
 
 **탈출 조건:**
-1. **PASS** → 즉시 종료
+1. **PASS** → 콘솔 수정 루프를 끝내고 아래 최종 build·전체 회귀 게이트 수행
 2. **동일 에러 3연속 [미수정]** → 차단 원인을 기록하고 중단
 3. **5회 후 미해결 FAIL** → 완료로 보고하지 않고 남은 오류를 기록
 
 ### 최종 확인
 
-모든 도달 가능한 상태에서 에러 0개 확인 후 다음 단계 진행
+모든 도달 가능한 상태에서 에러 0개 확인 후 아래 최종 build·전체 회귀 게이트 진행
 
 합리적인 선에서 최대한 많은 서브에이전트를 병렬로 사용한다 (동시 실행 최대 10개).
 
@@ -126,4 +126,35 @@ node "<validation-checkout>/scripts/verify-output.mjs" --workspace "<project-roo
 native API 사용을 증명했다고 주장하지 않으며 Step37/45의 실제 분기 검증도 확인한다.
 과거 완료 기록의 복구는 새 검증이 아니다. 상세 계약은 `docs/ROUTING.md`를 따른다.
 실제 데스크톱·모바일 스크린샷도 검토한다. 누락·실패·스킵이 남으면 50/50을 보고하지 않는다.
+
+### 마지막 build 이후 전체 회귀 게이트
+
+최종 build 뒤에는 `docs/QA-REPORTS.md`의 final candidate 절차로 Step50 QA snapshot을
+만들고 artifact 목록에 `dist/index.html`을 반드시 넣는다. 이전 45~49단계의 PASS를
+그대로 재사용하지 않는다. 보고서에서 전체 검사 목록을 가져오고 새 상태를 포함해,
+동일한 최종 HTML에서 다음 여섯 검사를 전부 다시 실행한다.
+
+| 필수 check ID | 전체 재검증 범위 |
+|---|---|
+| `e2e-regression` | 45단계 성공·실패·전이·edge case 전체 E2E |
+| `screenshot-regression` | 46단계 모든 화면·상태·viewport 스크린샷 |
+| `keyboard-regression` | 47단계 전체 키보드·포커스 검사 |
+| `mouse-regression` | 48단계 전체 마우스·상태 전이 검사 |
+| `design-regression` | 49단계 전체 디자인 요구사항·시각 검토 |
+| `console-regression` | 50단계 모든 도달 가능 상태의 오류 검사 |
+
+45단계의 local serving URL과 hash/history mode를 유지한다. 검증자는 source와 dist를
+수정하지 않는다. 수정·rebuild가 필요하면 새 snapshot과 여섯 검사를 모두 다시 실행한다.
+최종 수정·검증 순환은 최대 5회이며 남은 실패·미실행은 `INCOMPLETE`다. 위임하지 못하면
+`same-agent`로 기록하고 별도 검증자가 실행했다고 쓰지 않는다.
+
+관측·스크린샷·console 증거 파일을 완성한 뒤 snapshot ID로 모든 결과를 record한다.
+기록한 증거는 최종 요약 작성 때 덮어쓰지 않는다. 마지막으로 다음 읽기 전용 검사를
+실행하고 종료 코드 0을 확인한다. 실패하면 현재 단계를 완료로 보고하지 않는다.
+
+```text
+node "<plugin-root>/scripts/quality-gate.mjs" --inspect-final --workspace "<project-root>"
+```
+
+완료 훅도 현재 품질·브라우저·여섯 회귀 검사와 최종 HTML hash를 다시 확인한다.
 모든 게이트를 통과한 뒤에만 전체 완료를 보고하며 이후 다른 step 파일을 읽지 않는다.

@@ -30,6 +30,7 @@ import {
 } from "../scripts/lib/workflow.mjs";
 import { runCli } from "./helpers/run-cli.mjs";
 import { completionHtml, passingBrowserReport } from "./helpers/routing.mjs";
+import { prepareQuality, prepareFinalRegression } from "./helpers/completion-quality.mjs";
 import {
   hashFile,
   makeDirectoryLink,
@@ -89,6 +90,8 @@ async function materializeRepresentativeFixture(contract, workspaceRoot = null) 
   for (const item of contract.acceptance.filter(value => value.validator === "browser-output")) {
     await writeFile(join(root, item.path), JSON.stringify(browserReport(await hashFile(join(root, "dist/index.html")))));
   }
+  if ([38, 44, 50].includes(contract.number)) await prepareQuality(root);
+  if (contract.number === 50) await prepareFinalRegression(root);
   return { workspaceRoot: root, evidence: evidenceFor(contract) };
 }
 

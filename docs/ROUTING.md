@@ -142,8 +142,10 @@ The legacy name does not require componentization. The report records routing,
 structure, accessibility and build evidence. Missing or
 failed routing checks block a new Step 44 completion. This does not rewrite or
 revalidate historical completion receipts. Step 44 reviews the server fallback
-configuration and local direct entry; Step 45 still verifies history-mode direct
-entry and reload on the actual deployment server. Step 50 still requires the
+configuration and local direct entry; Step 45 requires local history-mode direct
+entry and reload, and repeats them on a real deployment only when an authorized
+target is already available. Otherwise it records deployment verification as
+pending and scopes completion to the local artifact. Step 50 still requires the
 final schema-3 browser report bound to the current HTML.
 
 Run the verifier from a checkout with the pinned browser dependencies installed:
@@ -191,7 +193,7 @@ satisfy fresh completion. Existing historical receipts retain their recovery
 semantics; replaying a receipt does not perform a new browser verification.
 
 Codex validates the route inventory against the same stable HTML bytes it hashes.
-Claude checks current quality and browser evidence before recording a new Step 50.
+Both hosts check current quality, browser and final regression evidence before recording a new Step 50.
 The inspection command does not execute project commands or launch a browser:
 
 ```text
@@ -200,6 +202,12 @@ node "<plugin-root>/scripts/quality-gate.mjs" --inspect-final --workspace "<proj
 
 History-mode verification serves the same HTML at the declared paths in an isolated
 browser context. **This proves application routing, not deployment rewrites.**
-Step 45 must also check direct entry and refresh on the real deployment server
-when history mode is selected. Keep project-specific E2E for title, focus, active
+Step 45 also checks direct entry and refresh on an already authorized, available
+deployment target. Without one, `deployment-verification: pending` is explicit;
+local completion does not claim deployment readiness. If deployment is itself a
+user requirement, pending verification cannot satisfy that requirement. No step
+implicitly authorizes a deployment. Record the serving URL, mode, fallback and
+tested build digest for reuse in Steps 46–50. Live evidence applies only to the
+deployed revision that was checked, not to later local builds.
+Keep project-specific E2E for title, focus, active
 navigation, dialogs, filters, asynchronous data, and other states.

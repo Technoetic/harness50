@@ -40,11 +40,20 @@ step025 기획 결과를 기반으로 레이아웃 설계와 전체 설계를 su
 
 **설계 시작 전 반드시 `step_archive/TOPIC/TOPIC.md`를 Read한다.** 인터랙티브 요구(`interactive`), 타깃(`audience`), 대중 앱 사례(`real_world_apps`)가 레이아웃·인터랙션 설계에 반영되어야 한다. 단, brainstorming 스킬의 사용자 옵션 질문은 `NEW-WORK-규칙.md` 2번에 따라 금지하고, 결정을 즉시 내려 설계 문서에 사유와 함께 기록한다.
 
+**최종 조사 입력:** `step_archive/outputs/step024_검증_r1.md`의 최종 판정과 보충 수집 manifest를 먼저 읽는다.
+원래 조사 청크와 manifest가 가리키는 `step_archive/supplemental/step024/<attempt-id>/round-N/`의
+보충 원문·재분석을 함께 반영한다. 최종 검증이 미완료이면 이 단계도 진행하지 않는다.
+기존 출처를 보존하고 각 결정에서 원본 또는 보충 출처를 추적 가능하게 기록한다.
+
 **필요한 파일:**
 
 - `step_archive/TOPIC/TOPIC.md` (필수, 가장 먼저 Read)
 
-- step025_planning_chunk*.md (기획 결과)
+- step025_planning_chunk*.md (26–29 보강을 모두 반영한 최종 기획)
+- `step_archive/outputs/step029_최종기획검증_r*.md` (최종 독립 PASS와 기획 청크 해시)
+
+설계 전에 최종 독립 PASS 및 기획 청크별 SHA-256 일치를 확인한다. Step 25 초안 PASS로 대신하지 않는다.
+최종 보고서 누락·FAIL·해시 불일치이면 설계를 시작하거나 Step 30을 완료하지 않고 미완료로 인계한다.
 
 **설계 범위:**
 
@@ -164,10 +173,10 @@ step030_전체설계_chunk2.md (500줄 이하)
 
 ## 오류 발생 시
 
-오류 발생 시 원인을 분석하고 수정한 뒤 재시도한다. 3회 재시도 후에도 실패하면 오류를 기록하고 다음 Step으로 진행한다.
+오류 발생 시 원인을 분석하고 수정한 뒤 재시도한다. 3회 재시도 후에도 실패하면 오류·미해결 항목·다음 검사를 기록하고 현재 Step을 INCOMPLETE로 인계한다. 완료 보고와 다음 Step 진입은 금지한다.
 
 
 ---
 
-이 지침을 완료한 즉시 자동으로 step031.md를 읽고 수행한다. 사용자 확인을 기다리지 않는다.
+필수 요구와 현재 검증 증거가 모두 PASS일 때만 이 지침을 완료하고 자동으로 step031.md를 읽고 수행한다. 사용자 확인을 기다리지 않는다.
 

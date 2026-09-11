@@ -58,6 +58,13 @@ exit code를 기록한다. 이 진단은 필수 게이트를 대체하지 않는
 dist metadata·digest·boundary 검사, cycle 방식·대상·0개 결과, advisory 결과를 기록한다.
 
 ## 독립 검증
+새 완료 영수증을 만들 때 런타임은 `inspectQualityReport`로
+`step_archive/outputs/quality-gate.json`의 현재 `PASS`를 다시 검사한다. 테스트·린트·타입·보안
+검사와 측정 커버리지가 현재 소스·설정·커버리지 파일에 결합되어야 한다. 보고서 누락·실패·변경은
+현재 시도를 미완료로 남기며 새 영수증을 만들지 않는다. 검증한 보고서 SHA-256은 런타임이
+`measured-quality-report` 증거로 영수증에 기록한다. 기존 영수증의 재시도·복구는 과거 기록을
+보존하며 현재 보고서로 기존 영수증을 다시 쓰지 않는다.
+
 
 플러그인 `docs/QUALITY.md`에 따라 `harness50.quality.json`에 실제 프로젝트 검사 명령을
 설정하고 `node "<plugin-root>/scripts/quality-gate.mjs" --workspace "<project-root>"`를

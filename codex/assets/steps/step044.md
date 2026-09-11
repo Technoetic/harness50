@@ -84,7 +84,8 @@ hash mode의 HTTP와 직접 file 동작을 확인하고, history mode이면 app-
 API·asset 경로의 진짜 404도 함께 검토해 catch-all 범위를 제한한다. hash/file에서는
 server rewrite가 불필요한 사유와 실제 동작을 기록한다. 내부 fallback fixture나 정적
 검사는 배포 rewrite 증거가 아니다. 실제 배포 환경의 direct visit와 refresh 증거는
-45단계 전체 E2E에서 수집하고, 50단계는 현재 HTML에 결합된 최종 browser 보고서를 검증한다.
+45단계 전체 E2E에서 이미 승인되고 준비된 배포 대상이 있을 때 수집한다. 대상이 없으면
+로컬 검증과 배포 검증 대기를 구분하며, 50단계는 현재 HTML에 결합된 최종 browser 보고서를 검증한다.
 
 ## 개발 source와 최종 HTML 경계
 
@@ -123,6 +124,13 @@ external asset 정책과 최종 dist bundling을 서로 다른 검사로 기록�
 reference 검사만으로 final routing이나 self-contained dist를 통과 처리하지 않는다.
 
 ## 독립 milestone 검증
+새 완료 영수증을 만들 때 런타임은 `inspectQualityReport`로
+`step_archive/outputs/quality-gate.json`의 현재 `PASS`를 다시 검사한다. 테스트·린트·타입·보안
+검사와 측정 커버리지가 현재 소스·설정·커버리지 파일에 결합되어야 한다. 보고서 누락·실패·변경은
+현재 시도를 미완료로 남기며 새 영수증을 만들지 않는다. 검증한 보고서 SHA-256은 런타임이
+`measured-quality-report` 증거로 영수증에 기록한다. 기존 영수증의 재시도·복구는 과거 기록을
+보존하며 현재 보고서로 기존 영수증을 다시 쓰지 않는다.
+
 
 milestone 독립 검증자는 external reference, rendered structure, accessibility, current
 build, `dist/index.html`과 다섯 routing 완료 조건을 처음부터 다시

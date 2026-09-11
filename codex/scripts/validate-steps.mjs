@@ -19,7 +19,7 @@ const STEP_KEYS = [
 ];
 const ACCEPTANCE_COMMON_KEYS = ["id", "kind", "required", "description"];
 const INITIAL_INPUTS = new Set(["step_archive/TOPIC/TOPIC.md", "package.json"]);
-const VISUAL_STEPS = new Set([22, 23, 24, 29, 37, 39, 40, 43, 46, 47, 48, 49]);
+const VISUAL_STEPS = new Set([22, 23, 24, 29, 37, 39, 40, 43, 46, 47, 48, 49, 50]);
 const TARGET_AUXILIARY_FILES = new Set(["index.json", "PORTING.md"]);
 const RETIRED_VALIDATOR = /\b(?:tokei|dependency|research-chunk|research|build|c8|biome|linting|formatting|stylelint|semgrep|playwright|e2e|ui-regression|accessibility|axe-core|jscpd|madge|knip|deadcode|lhci|load-test|type-safety|refactoring|step03)-(?:validator|checker)\.(?:ps1|sh)\b/gi;
 

@@ -30,7 +30,8 @@ milestone gate도 함께 보존한다.
 legacy 경로다. 이름을 바꾸지 말고 routing·구조·접근성·build 증거를 기록한다. legacy
 파일명은 HTML component 분리를 요구한다는 뜻이 아니다. 이 단계의
 내부 fixture나 정적 검사는 실제 배포 rewrite 증거가 아니며, 실제 배포 direct visit와
-refresh 검증은 45단계가 담당하고, 50단계는 현재 HTML에 결합된 최종 browser 보고서를 검증한다.
+refresh 검증은 45단계에서 이미 승인되고 준비된 배포 대상이 있을 때만 수행한다.
+배포 대상이 없으면 로컬 검증과 배포 검증 대기를 구분하며, 50단계는 현재 HTML에 결합된 최종 browser 보고서를 검증한다.
 
 ## 개발 source와 최종 HTML 경계
 

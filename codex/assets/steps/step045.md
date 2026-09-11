@@ -24,7 +24,7 @@ suite가 재현 가능하게 통과하는지 독립적으로 확인한다.
 - 입력: `step_archive/outputs/trust5_r2.md`
 - 필수 선행 항목: `step001`, `step030`, `step031`, `step038`, `step044`
 - 산출물: `step_archive/step045_e2e테스트결과.md`
-- 네트워크: browser readiness에 필요한 경우에만 제한적으로 사용한다.
+- 네트워크: browser readiness와 이미 승인되고 준비된 배포 대상의 읽기 전용 검증에만 제한적으로 사용한다.
 - 시각 검토: 필요하지 않다.
 
 ## 실행 역할
@@ -66,8 +66,14 @@ topic, design, built application과 실제 user flow를 읽고 성공 흐름, �
 모든 경로를 포함해야 하며 두 시나리오를 동일한 공통 검사 제한 시간 안에서 실행한다.
 파일 직접 열기 지원은 hash manifest로 검증한다. history manifest는 HTTP(S)가 필요하며
 실행 환경에 따라 mode를 암묵 변환해 테스트하지 않는다.
-history 모드는 실제 배포 서버의 직접 접속·새로고침 증거도 필요하며 검사기 내부
-fallback은 배포 설정의 증거가 아니다. 제목·활성 메뉴·포커스 전이도 E2E로 확인한다.
+history 모드는 로컬 HTTP 서버의 fallback 설정과 직접 접속·새로고침 증거가 필수다.
+사용자가 이미 승인한 실제 배포 대상이 준비되어 있을 때만 그 서버에서도 검증한다.
+대상이나 권한이 없으면 `deployment-verification: pending`과 사유를 기록하고 로컬
+완료 범위를 명시한다. 이 단계는 배포를 실행하거나 권한을 새로 만들지 않는다.
+실제 배포까지 사용자 요구사항에 포함되어 있으면 대기를 전체 완료로 바꾸지 않는다.
+검사기 내부 fallback은 배포 설정의 증거가 아니다. 제목·활성 메뉴·포커스 전이도 E2E로 확인한다.
+보고서에 local serving URL, hash/history mode, fallback 설정과 검사한 build SHA-256을
+남기고 46~50단계에 전달한다. 배포 검증은 확인한 배포 버전에만 유효하다.
 
 ## 전체 E2E 실행과 독립 검증
 

@@ -156,6 +156,24 @@ foreach ($s in @($progress.completed_steps)) { [void]$existing.Add([int]$s) }
 $completedNew = @()
 foreach ($s in $validSteps) {
     if (-not $existing.Contains($s)) {
+        if ($totalSteps -eq 50 -and $s -in @(39, 40, 43, 46, 47, 48)) {
+            # Inspect immutable QA evidence only; a completion sentence is not proof.
+            $qaPassed = $false
+            $qaInspector = Join-Path (Split-Path $PSScriptRoot -Parent) 'scripts/qa-report.mjs'
+            if ((Test-Path -LiteralPath $qaInspector) -and (Get-Command node -ErrorAction SilentlyContinue)) {
+                try {
+                    $qaJson = (& node $qaInspector inspect --workspace $projectRoot --step $s 2>$null | Out-String)
+                    if ($LASTEXITCODE -eq 0) {
+                        $qaResult = $qaJson | ConvertFrom-Json -ErrorAction Stop
+                        $qaPassed = $qaResult.status -eq 'current' -and $qaResult.verdict -eq 'PASS'
+                    }
+                } catch {}
+            }
+            if (-not $qaPassed) {
+                Write-WriterLog "Step $s remains incomplete: QA evidence missing, failed, or stale."
+                continue
+            }
+        }
         if ($totalSteps -eq 50 -and $s -eq 50) {
             # New final completion needs current measured evidence. Inspection only:
             # never install a browser or run project commands inside a Stop hook.

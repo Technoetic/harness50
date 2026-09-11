@@ -22,6 +22,17 @@ Playwright로 마우스 인터랙션을 직접 수행하며 스크린샷을 촬�
 
 **스크린샷 없이 통과 처리 금지. 반드시 Claude가 직접 스크린샷을 눈으로 확인한다.**
 
+## QA 완료 증거 (필수)
+
+신뢰한 설치 플러그인의 `docs/QA-REPORTS.md`와 `scripts/qa-report.mjs`를 사용한다.
+각 시도 시작에 `inspect --workspace "<project-root>" --step 48`으로 이전 실패를 확인한다.
+수정과 필요한 build를 마친 뒤 검증 전에 `snapshot`을 만든다. 실제 소스·설정·검증 대상
+산출물과 본문의 모든 필수 검사(화면·viewport·상태 조합 포함)를 명시한다.
+검증자의 실제 관찰과 스크린샷·실행 결과를 `record`로 기록한 뒤 다시 `inspect`한다.
+`status=current`와 `verdict=PASS`를 모두 확인해야 완료 보고 및 다음 Step 진입이 가능하다.
+필수 실패·증거 누락·미실행·stale은 INCOMPLETE다. 수정 뒤에는 새 snapshot과 재검증이 필요하다.
+검증 전 snapshot을 검증 후 새로 만들어 과거 결과를 현재 PASS로 바꾸지 않는다.
+
 ## 검증 항목
 
 각 항목마다 인터랙션 전후 스크린샷을 쌍으로 촬영하여 `step_archive/screenshots/mouse/` 에 저장한다.
@@ -56,6 +67,13 @@ Playwright로 마우스 인터랙션을 직접 수행하며 스크린샷을 촬�
 - 스크롤 전 → 중간 → 끝 스크린샷
 - 확인: sticky 요소, 무한 스크롤, lazy load, 스크롤바 동작
 
+## 검증 서버와 라우팅 입력
+
+Step 45에서 검증한 서버 실행 방법·base URL·manifest routing mode를 재사용한다.
+서버를 재시작해야 하면 같은 설정으로 시작하고 준비 상태를 확인한다. history mode는 HTTP(S)와
+SPA fallback을 유지하며 file://로 바꾸지 않는다. hash mode도 Step 45에서 검증한 serving mode를 유지한다.
+각 화면의 canonical URL을 사용하고 보고서에 base URL·mode·화면 ID를 기록한다.
+
 ## 실행 방법
 
 각 항목마다 Playwright 스크립트를 작성하여 실행한다:
@@ -67,7 +85,10 @@ const { chromium } = require('playwright');
 (async () => {
   const browser = await chromium.launch();
   const page = await browser.newPage();
-  await page.goto('file:///path/to/dist/index.html');
+  // Step 45의 검증된 base URL + 해당 화면 canonical path로 설정한다.
+  const targetUrl = process.env.HARNESS50_QA_URL;
+  if (!targetUrl) throw new Error('HARNESS50_QA_URL must reuse the Step 45 serving context');
+  await page.goto(targetUrl);
 
   // 인터랙션 전 스크린샷
   await page.screenshot({ path: 'step_archive/screenshots/mouse/[항목]-before.png', fullPage: true });
@@ -96,17 +117,15 @@ const { chromium } = require('playwright');
    - 해당 소스 코드 수정
    - 스크립트 재실행 → 스크린샷 재촬영
    - Claude가 다시 직접 확인
-   - **통과할 때까지 무한 반복**
+   - **최대 5라운드 안에서 수정·재검증; 한도 소진 시 INCOMPLETE**
 4. 모든 항목 통과 확인 후 다음 단계 진행
 
-### 반복 제한: 무한 반복 + 스마트 탈출
+### 반복 제한: 최대 5라운드
 
-회차 제한 없이 PASS가 나올 때까지 반복한다.
-
-**탈출 조건:**
-1. **PASS** → 즉시 종료
-2. **동일 항목 3연속 [미수정]** → 해당 항목만 스킵 처리하고 나머지 항목은 계속 반복
-3. **모든 FAIL 항목이 스킵 상태** → 종료 (해결 불가 판정, 스킵 사유를 최종 보고에 기록)
+최대 5라운드까지 수정·재검증한다. 같은 필수 항목이 3연속 미수정이면 조기 종료한다.
+모든 필수 항목의 현재 증거가 PASS일 때만 완료한다. 실패·누락·미검증 또는 한도 소진이면
+미해결 항목과 다음 검사를 기록하고 현재 Step을 INCOMPLETE로 인계한다.
+필수 실패를 스킵하거나 완료 보고 후 다음 Step으로 진행하지 않는다.
 
 서브에이전트는 항상 haiku를 사용한다.
 
@@ -124,6 +143,6 @@ const { chromium } = require('playwright');
 
 ---
 
-이 지침을 완료한 즉시 자동으로 step049.md를 읽고 수행한다. 사용자 확인을 기다리지 않는다.
+필수 요구와 현재 검증 증거가 모두 PASS일 때만 이 지침을 완료하고 자동으로 step049.md를 읽고 수행한다. 사용자 확인을 기다리지 않는다.
 
 

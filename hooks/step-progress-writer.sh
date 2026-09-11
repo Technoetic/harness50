@@ -95,6 +95,21 @@ for line in response.split("\n"):
 
 valid={n for n in found if (os.path.isfile(os.path.join(a_dir,f"step{n:03d}.md")) or os.path.isfile(os.path.join(os.path.dirname(a_dir),f"step{n:03d}.md")))}
 existing=set(int(x) for x in (progress.get("completed_steps") or []))
+if total == 50:
+    qa_inspector = os.path.join(os.path.dirname(os.environ["H50_WRITER_INSPECTOR"]), "qa-report.mjs")
+    for step in sorted((valid - existing) & {39, 40, 43, 46, 47, 48}):
+        qa_passed = False
+        try:
+            inspected = subprocess.run(
+                ["node", qa_inspector, "inspect", "--workspace", os.path.dirname(os.path.dirname(p_path)), "--step", str(step)],
+                capture_output=True, text=True, encoding="utf-8", timeout=30)
+            result = json.loads(inspected.stdout)
+            qa_passed = inspected.returncode == 0 and result.get("status") == "current" and result.get("verdict") == "PASS"
+        except (OSError, ValueError, subprocess.TimeoutExpired):
+            pass
+        if not qa_passed:
+            valid.discard(step)
+            print(f"Step {step} remains incomplete: QA evidence missing, failed, or stale.")
 if total == 50 and 50 in valid and 50 not in existing:
     # Inspection only, with a deadline; no browser installation or project commands.
     final_passed = False

@@ -222,6 +222,6 @@ export async function inspectQa(workspaceRoot, step) {
     require((await snapshotRead(root, step, report.snapshot_id)).digest === snapshot.digest);
     return { status: current ? 'current' : 'stale', step, verdict: current ? report.verdict : 'INCOMPLETE',
       preserve: current ? report.outcomes.filter(outcome => outcome.status === 'pass').map(outcome => outcome.id) : [],
-      report_sha256: loaded.digest, report };
+      report_sha256: loaded.digest, artifacts: snapshot.value.artifacts, report };
   } catch { return empty('invalid'); }
 }

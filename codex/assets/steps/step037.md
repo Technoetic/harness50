@@ -12,6 +12,8 @@ phase: implementation
 
 ## 입력과 산출물
 
+- 입력: `step_archive/outputs/step024_검증_r1.md`
+
 - 입력: `step_archive/TOPIC/TOPIC.md`
 - 입력: `step_archive/step022_수집결과_chunk1.md`
 - 입력: `step_archive/awwwards-step022-primary.txt`
@@ -24,7 +26,7 @@ phase: implementation
 - 입력: `step_archive/step032_파일인덱스_chunk1.md`
 - 입력: `step_archive/step035_컨텍스트정책.md`
 - 입력: `step_archive/step036_인코딩정책.md`
-- 필수 선행 항목: `step022`, `step023`, `step030`, `step031`, `step032`, `step035`, `step036`
+- 필수 선행 항목: `step024`, `step022`, `step023`, `step030`, `step031`, `step032`, `step035`, `step036`
 - 산출물: `step_archive/step037_구현manifest.md`
 - 네트워크: 사용하지 않는다.
 - 시각 검토: 필수
@@ -92,6 +94,13 @@ fallback 및 링크/form 우회를 포함한다. 가짜 API만 주입한 테스�
 구현 독립 검증자는 TOPIC 다섯 필드, 선택된 설계 하나, 파일 소유권, 실제 test 결과,
 Class·async·접근성 계약과 screenshot-to-CSS 추적을 처음부터 확인한다. 구현이나 manifest를
 직접 고치지 않고 evidence가 빠진 항목을 `PASS`로 바꾸지 않는다.
+
+## 최종 연구 증거 사용
+
+24단계 최종 PASS 보고서 `step_archive/outputs/step024_검증_r1.md`의 보완 manifest와 통합 분석도 입력이다.
+원래 22·23단계 자료와 함께 채택한 보완 파일의 경로·SHA-256을 대조하고 필수 이미지를 실제로 연다.
+조사 축·대안이 보완되었다면 24단계 최종 분석을 따른다. 최신 기획·설계의 해당 provenance와 비교하고 기존 원본만으로 보완 결론을 대체하지 않는다.
+보완이 없으면 명시된 빈 manifest를 확인한다. 이 단계에서 새 사이트 방문이나 자료 수집을 하지 않는다.
 
 ## 완료 조건
 

@@ -118,6 +118,49 @@ are limited to 1,024 characters; requirements, next checks and next actions to
 | `inspect`: `stale`, `missing` or `invalid` | 2 | Current successful QA is not established |
 | Invalid command/input or reporter failure | 2 | Generic diagnostic on stderr; no input or exception details echoed |
 
+## Final candidate regression at Step 50
+
+The final build invalidates earlier QA whenever its bytes change. After the last
+repair and final build, keep the candidate read-only and rerun the complete
+Step 45 E2E scenarios, Step 46 screenshot matrix, Step 47 keyboard matrix,
+Step 48 mouse matrix, Step 49 design review and Step 50 reachable-state console
+matrix. Retain their full scenario inventories and add newly introduced states;
+an entry-page smoke test cannot replace them. Reuse Step 45's recorded serving
+mode and local server URL; history routing requires an HTTP server with fallback.
+
+Create one fresh Step 50 snapshot immediately before these runs. Include
+`dist/index.html` and any additional source/configuration files that affect the
+candidate. The snapshot must declare all six check IDs below; additional
+product-specific requirements may also be declared.
+
+```json
+{
+  "artifacts": ["dist/index.html"],
+  "checks": [
+    { "id": "e2e-regression", "requirement": "All Step 45 scenarios pass on the final build" },
+    { "id": "screenshot-regression", "requirement": "All Step 46 screens and viewports are reviewed on the final build" },
+    { "id": "keyboard-regression", "requirement": "All Step 47 keyboard interactions pass on the final build" },
+    { "id": "mouse-regression", "requirement": "All Step 48 mouse interactions pass on the final build" },
+    { "id": "design-regression", "requirement": "All Step 49 design requirements pass on the final build" },
+    { "id": "console-regression", "requirement": "All Step 50 reachable states have no required console or request errors" }
+  ]
+}
+```
+
+Run the existing `snapshot` and `record` commands with `--step 50`; each outcome
+must reference newly collected, sanitized evidence for its complete matrix.
+Use `same-agent` if independent verification is unavailable. Neither copying
+earlier PASS text nor taking a new snapshot around old test results establishes
+a rerun. Any fix or rebuild during this phase requires another snapshot and all
+six matrices again. Bound the final repair/rerun cycle to five rounds; failures
+or unexecuted checks remain incomplete when that limit is reached.
+
+New Step 50 completion in either host inspects this current report, the six
+required categories and the final HTML binding, alongside measured quality and
+browser evidence. The inspector executes no tests itself. The immutable report
+hash is included in new Codex completion evidence. Earlier step receipts remain
+history and are not overwritten to simulate rerunning them.
+
 ## Storage and limits
 
 Snapshots, immutable reports and each step's current reference live under

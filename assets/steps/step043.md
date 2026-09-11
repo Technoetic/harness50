@@ -17,6 +17,24 @@ persistence: session
 
 Step 37에서 구현된 CSS가 Awwwards 조사 결과를 충실히 반영했는지 **작성자와 검증자를 분리하여** 검증하고 보강한다.
 
+## 최종 조사 기준
+
+`step_archive/outputs/step024_검증_r1.md`의 최종 PASS manifest와 통합 분석을 먼저 읽는다.
+비교 기준은 기존 참고 이미지와 최종 manifest에서 채택한 보충 이미지·조사 축을 모두 포함한다.
+검증자는 보충 원문·스크린샷도 직접 열어 확인한다. 기존 glob에 없는 보충 이미지를 누락하거나
+보충 전에 부족하다고 판정된 Step 23 결론만으로 비교 기준을 되돌리지 않는다.
+
+## QA 완료 증거 (필수)
+
+신뢰한 설치 플러그인의 `docs/QA-REPORTS.md`와 `scripts/qa-report.mjs`를 사용한다.
+각 시도 시작에 `inspect --workspace "<project-root>" --step 43`으로 이전 실패를 확인한다.
+수정과 필요한 build를 마친 뒤 검증 전에 `snapshot`을 만든다. 실제 소스·설정·검증 대상
+산출물과 본문의 모든 필수 검사(화면·viewport·상태 조합 포함)를 명시한다.
+검증자의 실제 관찰과 스크린샷·실행 결과를 `record`로 기록한 뒤 다시 `inspect`한다.
+`status=current`와 `verdict=PASS`를 모두 확인해야 완료 보고 및 다음 Step 진입이 가능하다.
+필수 실패·증거 누락·미실행·stale은 INCOMPLETE다. 수정 뒤에는 새 snapshot과 재검증이 필요하다.
+검증 전 snapshot을 검증 후 새로 만들어 과거 결과를 현재 PASS로 바꾸지 않는다.
+
 ## 핵심 원칙: 작성 에이전트 ≠ 검증 에이전트
 
 같은 에이전트가 작성하고 스스로 통과 판정하는 것을 **금지**한다. 반드시 독립된 두 에이전트를 사용한다.
@@ -31,14 +49,15 @@ Playwright로 현재 구현의 스크린샷을 촬영하여 `step_archive/screen
 
 **에이전트 B의 역할: 비교 검증만 수행. CSS 수정 금지.**
 
-에이전트 B에게 전달할 프롬프트 (N = 현재 라운드 번호 1, 2, 3):
+에이전트 B에게 전달할 프롬프트 (N = 현재 라운드 번호 1–5):
 
 ```
 너는 디자인 검증자다. CSS를 수정하지 않는다. 비교 판정만 한다.
 
-1. 아래 Awwwards 원본 스크린샷을 모두 Read한다:
-   - `step_archive/screenshots/research/awwwards-*.png` (Glob 검색)
-   - `step_archive/awwwards-*.txt` (Glob 검색)
+1. `step_archive/outputs/step024_검증_r1.md`의 최종 PASS manifest와 통합 분석·조사 축을 먼저 Read한다.
+   - 채택한 모든 기존·보충 원문과 이미지의 정확한 경로를 해석하고 SHA-256을 대조한다.
+   - 원문을 읽고 이미지는 직접 열어 확인한다. 기존 glob만으로 입력을 제한하지 않는다.
+   - 최종 PASS 누락, 입력 누락·hash 불일치 또는 필수 이미지 미검사는 INCOMPLETE다.
 
 2. 구현 스크린샷을 Read한다:
    - `step_archive/screenshots/compare-awwwards-applied-rN.png`
@@ -52,6 +71,7 @@ Playwright로 현재 구현의 스크린샷을 촬영하여 `step_archive/screen
    이전 라운드에서 지적한 항목은: [수정됨] 또는 [미수정]으로 표시한다.
 
 5. 결과를 `step_archive/outputs/step043_검증_rN.md`에 저장한다.
+   - 실제 검사한 기존·보충 입력의 경로·SHA-256과 통합 조사 축별 관찰을 기록한다.
    - 부족한 부분이 없으면: "PASS"로 시작
    - 부족한 부분이 있으면: "FAIL"로 시작하고 구체적 피드백 나열
 ```
@@ -62,7 +82,7 @@ Playwright로 현재 구현의 스크린샷을 촬영하여 `step_archive/screen
 
 `step043_검증_rN.md`를 Read한다.
 
-- **PASS로 시작하면** → 종료, 다음 Step으로 이동
+- **PASS로 시작하면** → QA 보고서 기록·현재 PASS 확인 후 다음 Step으로 이동
 - **FAIL로 시작하면** → 4단계로 진행
 
 ### 4단계: 수정 에이전트 (에이전트 A) 실행
@@ -81,12 +101,15 @@ Playwright로 현재 구현의 스크린샷을 촬영하여 `step_archive/screen
    - `step_archive/outputs/step043_수정_r*.md` (Glob 검색)
    - 이전에 수정했는데 [미수정]으로 판정된 항목은 다른 방식으로 재수정한다
 
-3. Awwwards 원본 스크린샷을 모두 Read한다:
-   - `step_archive/screenshots/research/awwwards-*.png` (Glob 검색)
+3. `step_archive/outputs/step024_검증_r1.md`의 최종 PASS manifest와 통합 분석·조사 축을 먼저 Read한다.
+   - 채택한 모든 기존·보충 원문과 이미지의 정확한 경로를 해석하고 SHA-256을 대조한다.
+   - 원문을 읽고 이미지는 직접 열어 확인한다. 기존 glob만으로 입력을 제한하지 않는다.
+   - 최종 PASS 누락, 입력 누락·hash 불일치 또는 필수 이미지 미검사는 INCOMPLETE다.
 
 4. 피드백에 나열된 부족한 부분을 `src/css/*.css`, `src/js/Visualizer.js`에 반영한다.
 
 5. 수정 내역을 `step_archive/outputs/step043_수정_rN.md`에 기록한다.
+   실제 읽은 기존·보충 입력의 경로·SHA-256과 수정에 반영한 통합 조사 축도 기록한다.
 ```
 
 에이전트 A는 sonnet을 사용한다 (스크린샷 분석 필요).
@@ -95,18 +118,16 @@ Playwright로 현재 구현의 스크린샷을 촬영하여 `step_archive/screen
 
 수정 후 Playwright로 스크린샷을 `step_archive/screenshots/compare-awwwards-applied-rN.png` (N = 다음 라운드 번호)로 재촬영하고, 2단계(에이전트 B 검증)부터 반복한다.
 
-### 반복 제한: 무한 반복 + 스마트 탈출
+### 반복 제한: 최대 5라운드
 
-회차 제한 없이 PASS가 나올 때까지 반복한다.
-
-**탈출 조건:**
-1. **PASS** → 즉시 종료
-2. **동일 항목 3연속 [미수정]** → 해당 항목만 스킵 처리하고 나머지 항목은 계속 반복
-3. **모든 FAIL 항목이 스킵 상태** → 종료 (해결 불가 판정, 스킵 사유를 최종 보고에 기록)
+최대 5라운드까지 수정·재검증한다. 같은 필수 항목이 3연속 미수정이면 조기 종료한다.
+모든 필수 항목의 현재 증거가 PASS일 때만 완료한다. 실패·누락·미검증 또는 한도 소진이면
+미해결 항목과 다음 검사를 기록하고 현재 Step을 INCOMPLETE로 인계한다.
+필수 실패를 스킵하거나 완료 보고 후 다음 Step으로 진행하지 않는다.
 
 ## 실패 패턴 기록
 
-종료 시 (PASS 또는 스킵) `step_archive/progress.json`의 `failure_patterns` 배열에 FAIL 항목을 추가한다.
+종료 시 (PASS 또는 INCOMPLETE) `step_archive/progress.json`의 `failure_patterns` 배열에 FAIL 항목을 추가한다.
 - PASS로 종료된 경우에도 도중 FAIL이 있었던 항목은 기록한다.
 - 형식: `{ "step": 43, "항목": "FAIL 항목 요약", "해결": true/false }`
 
@@ -121,12 +142,11 @@ Playwright로 현재 구현의 스크린샷을 촬영하여 `step_archive/screen
 - 에이전트 A가 스스로 "통과"라고 판단하는 것을 금지한다
 - 에이전트 B가 CSS를 수정하는 것을 금지한다
 - 두 에이전트 모두 sonnet을 사용한다
-- 에이전트 B의 PASS/FAIL 판정만이 루프 종료 조건이다
+- 에이전트 B의 현재 PASS만 완료 조건이다. 실패·한도 소진은 미완료 종료 조건이다
 
 **이 단계에서 절대로 superpowers:brainstorming을 사용하지 않는다.**
 
 ---
 
-이 지침을 완료한 즉시 자동으로 step044.md를 읽고 수행한다. 사용자 확인을 기다리지 않는다.
-
+필수 요구와 현재 검증 증거가 모두 PASS일 때만 이 지침을 완료하고 자동으로 step044.md를 읽고 수행한다. 사용자 확인을 기다리지 않는다.
 

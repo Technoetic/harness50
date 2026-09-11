@@ -7,6 +7,7 @@ import { validateCompletionEvidence } from '../scripts/lib/acceptance.mjs';
 import { validateBrowserReportBytes } from '../../scripts/lib/browser-report.mjs';
 import { readRouteManifestBytes } from '../../scripts/lib/route-contract.mjs';
 import { makeWorkspace } from './helpers/workspace.mjs';
+import { prepareQuality, prepareFinalRegression } from './helpers/completion-quality.mjs';
 import { completionHtml, passingBrowserReport, routeManifestScript, singleRouteManifest } from './helpers/routing.mjs';
 
 const contract = { number: 50, id: 'step050', acceptance: [
@@ -22,6 +23,8 @@ async function completion(html = completionHtml, mutate = () => {}) {
   mutate(report);
   await writeFile(join(root, 'dist/index.html'), html);
   await writeFile(join(root, 'step_archive/outputs/browser-output.json'), JSON.stringify(report));
+  await prepareQuality(root);
+  await prepareFinalRegression(root);
   return validateCompletionEvidence({ contract, evidence, workspaceRoot: root });
 }
 

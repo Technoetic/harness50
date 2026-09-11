@@ -13,6 +13,8 @@ import { sanitizeEvidence } from "./receipts.mjs";
 import { validateHtmlBytes } from "../../../scripts/lib/html-document.mjs";
 import { readBrowserReportBytes } from "../../../scripts/lib/browser-report.mjs";
 import { readRouteManifestBytes, validateRouteManifest } from "../../../scripts/lib/route-contract.mjs";
+import { inspectQualityReport, REPORT_PATH as QUALITY_REPORT_PATH } from "../../../scripts/lib/quality.mjs";
+import { inspectFinalRegression } from "../../../scripts/lib/final-regression.mjs";
 
 const STEP_COUNT = 50;
 const SHA256 = /^[a-f0-9]{64}$/;
@@ -528,6 +530,67 @@ function sameJson(left, right) {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
+function runtimeReportIds(step) {
+  return [38, 44, 50].includes(step)
+    ? ["measured-quality-report", ...(step === 50 ? ["final-regression-report"] : [])]
+    : [];
+}
+
+function historicalReplayContract(contract, persistedEvidence) {
+  validateAcceptanceDeclarations(contract);
+  const ids = new Set(sanitizeEvidence(persistedEvidence).map(item => item.acceptance_id));
+  if (contract.number === 5 && ids.has("c8-version") && !ids.has("c8-disposition")) {
+    return { ...contract, acceptance: contract.acceptance.map(item => item.id === "c8-disposition"
+      ? { id: "c8-version", kind: "command", required: true,
+        description: "Historical c8 version check from published b4b4b8f.", command: "npx c8 --version" }
+      : item) };
+  }
+  const finalVisualIds = ["final-desktop-screenshot", "final-mobile-screenshot", "final-visual-inspection"];
+  if (contract.number === 50 && ![...finalVisualIds, ...runtimeReportIds(50)].some(id => ids.has(id))) {
+    // These three declarations and visual_review were added together. A receipt
+    // predating them proves only its original gates, never new visual/QA claims.
+    return { ...contract, visual_review: false,
+      acceptance: contract.acceptance.filter(item => !finalVisualIds.includes(item.id)) };
+  }
+  return contract;
+}
+
+async function measuredReports(step, workspaceRoot, afterArtifactOpen) {
+  if (!runtimeReportIds(step).length) return [];
+  const quality = await inspectQualityReport(workspaceRoot);
+  if (quality.verdict !== "PASS") {
+    fail("ACCEPTANCE_QUALITY_INCOMPLETE", "current measured quality PASS is required", { reason: quality.error });
+  }
+  const reports = [{ id: "measured-quality-report", path: QUALITY_REPORT_PATH }];
+  if (step === 50) {
+    const final = await inspectFinalRegression(workspaceRoot);
+    if (final.verdict !== "PASS") {
+      fail("ACCEPTANCE_FINAL_REGRESSION_INCOMPLETE", "current final regression PASS is required", { reason: final.error });
+    }
+    reports.push({ id: "final-regression-report", path: final.report_path, digest: final.report_sha256 });
+  }
+  const evidence = [];
+  for (const report of reports) {
+    report.digest = await hashStableArtifact(workspaceRoot, report, report.digest, afterArtifactOpen);
+    evidence.push({ acceptance_id: report.id, kind: "check", ok: true,
+      detail: `Validated ${report.path} SHA-256 ${report.digest}` });
+  }
+  // Recheck after all artifact callbacks: inspected source, coverage and QA
+  // evidence must still describe this candidate, and the report bytes must match.
+  const current = await inspectQualityReport(workspaceRoot);
+  if (current.verdict !== "PASS" || !sameJson(current, quality)) {
+    fail("ACCEPTANCE_QUALITY_INCOMPLETE", "measured quality changed during completion");
+  }
+  if (step === 50) {
+    const currentFinal = await inspectFinalRegression(workspaceRoot);
+    if (currentFinal.verdict !== "PASS" || currentFinal.report_sha256 !== reports[1].digest) {
+      fail("ACCEPTANCE_FINAL_REGRESSION_INCOMPLETE", "final regression changed during completion");
+    }
+  }
+  for (const report of reports) await hashStableArtifact(workspaceRoot, report, report.digest);
+  return evidence;
+}
+
 export async function validateCompletionEvidence({
   contract,
   evidence,
@@ -538,11 +601,26 @@ export async function validateCompletionEvidence({
   if (afterArtifactOpen !== undefined && typeof afterArtifactOpen !== "function") {
     fail("ACCEPTANCE_OPTIONS_INVALID", "afterArtifactOpen must be a function");
   }
-  const canonical = validateEvidenceShape(contract, evidence);
+  const reportIds = runtimeReportIds(contract?.number);
+  // Optional declarations preserve old receipts. New completions always run
+  // these gates; a custom/minimal contract cannot disable them.
+  if (reportIds.length && Array.isArray(contract.acceptance)) {
+    contract = { ...contract, acceptance: [...contract.acceptance,
+      ...reportIds.filter(id => !contract.acceptance.some(item => item.id === id)).map(id => ({
+        id, kind: "check", required: false, description: "Runtime-validated report digest."
+      }))] };
+  }
   if (persistedEvidence !== undefined) {
-    const persisted = validateEvidenceShape(contract, persistedEvidence, {
+    const replayContract = historicalReplayContract(contract, persistedEvidence);
+    const canonical = validateEvidenceShape(replayContract, evidence);
+    const persisted = validateEvidenceShape(replayContract, persistedEvidence, {
       requireArtifactDigest: true
     });
+    for (const durable of persisted) {
+      if (reportIds.includes(durable.acceptance_id) && !canonical.some(item => item.acceptance_id === durable.acceptance_id)) {
+        canonical.splice(persisted.indexOf(durable), 0, { ...durable });
+      }
+    }
     const completed = canonical.map((item, index) => {
       const durable = persisted[index];
       if (
@@ -560,6 +638,7 @@ export async function validateCompletionEvidence({
     return { evidence: persisted, missing_required: [] };
   }
 
+  const canonical = validateEvidenceShape(contract, evidence);
   const result = [];
   const browserBindings = {
     reports: new Map(), htmlRoutes: new Map(),
@@ -594,6 +673,14 @@ export async function validateCompletionEvidence({
     await hashStableArtifact(workspaceRoot, {
       id: acceptanceId, path: "dist/index.html", validator: "html-document"
     }, expectedDigest, undefined, browserBindings);
+  }
+  const reports = await measuredReports(contract.number, workspaceRoot, afterArtifactOpen);
+  for (const report of reports) {
+    const supplied = result.find(item => item.acceptance_id === report.acceptance_id);
+    if (supplied && !sameJson(supplied, report)) {
+      fail("ACCEPTANCE_REPORT_CONFLICT", "supplied runtime report evidence does not match inspected bytes");
+    }
+    if (!supplied) result.push(report);
   }
   return { evidence: result, missing_required: [] };
 }

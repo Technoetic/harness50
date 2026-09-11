@@ -31,8 +31,10 @@ phase: e2e
 - 필수 선행 항목: `step038`, `step044`, `step045`, `step046`, `step047`, `step048`, `step049`
 - 산출물: `step_archive/outputs/step050_콘솔에러.md`
 - 산출물: `step_archive/outputs/trust5_r3.md`
+- 산출물: `step_archive/screenshots/verified-desktop.png`
+- 산출물: `step_archive/screenshots/verified-mobile.png`
 - 네트워크: 사용하지 않는다.
-- 시각 검토: 필요하지 않다.
+- 시각 검토: 필요하다.
 
 ## 실행 역할
 
@@ -100,6 +102,33 @@ symbolic link가 아닌 일반 파일이고 0바이트보다 크며, UTF-8 conte
 `</html>` closing boundary가 있어야 한다. before/after metadata와 digest로 current
 artifact임을 확인한다.
 
+### 동일한 최종 후보의 전체 회귀 검증
+
+마지막 수정과 build 뒤 `docs/QA-REPORTS.md`의 final candidate 절차로 Step50 QA
+snapshot을 만든다. artifact 목록에는 `dist/index.html`을 반드시 넣는다. 45단계의
+local serving URL과 hash/history mode를 유지하고, 다음 여섯 필수 check ID를 선언한다.
+
+| check ID | 최종 후보에서 다시 실행할 전체 범위 |
+|---|---|
+| `e2e-regression` | 45단계의 성공·실패·전이·edge case 전체 시나리오 |
+| `screenshot-regression` | 46단계의 모든 화면·상태·viewport 스크린샷 검토 |
+| `keyboard-regression` | 47단계의 전체 키보드 입력·포커스·상태 전이 |
+| `mouse-regression` | 48단계의 전체 마우스 입력·상태 전이 |
+| `design-regression` | 49단계의 전체 디자인 요구사항과 독립 시각 검토 |
+| `console-regression` | 이 단계의 reachable-state manifest와 다섯 오류 범주 |
+
+기존 보고서에서 전체 검사 목록을 가져오되 새로 생긴 상태도 포함한다. 이전 PASS를
+복사하거나 첫 화면 검사만으로 대체하지 않는다. 검증 동안 source와 dist를 수정하지
+않는다. 수정 또는 rebuild가 필요하면 새 최종 후보를 만든 뒤 새 snapshot과 여섯
+검사를 모두 다시 실행한다. 이 최종 수정·검증 순환은 최대 5회이며 미해결·미실행은
+`INCOMPLETE`로 남긴다. 별도 검증자가 없으면 `same-agent`로 정확히 기록한다.
+
+새 관측·스크린샷·console 증거 파일을 모두 완성한 뒤 같은 snapshot ID로 여섯 결과를
+record한다. 기록에 사용한 증거 파일은 최종 요약 작성 때 다시 덮어쓰지 않는다.
+과거 45~49 영수증은 수정하지 않는다. 상태 관리자는 현재 Step50 QA 보고서의 여섯
+PASS와 최종 HTML hash를 직접 확인하며, 품질 보고서도 현재 source·설정·coverage와
+대조한다. 누락·실패·오래된 결과는 새 완료 영수증을 만들 수 없다.
+
 독립 검증자는 console, exact build, final dist와 보고서 evidence를 다시 확인한다. 모든
 필수 gate가 `PASS`인 뒤에만 `step_archive/outputs/step050_콘솔에러.md`와
 `step_archive/outputs/trust5_r3.md`를 최종 수락 증거로 제출한다.
@@ -129,5 +158,10 @@ artifact임을 확인한다.
 - `independent-console-verifier`: 비수정 독립 검증자가 전체 gate를 확인했다.
 - `receipt-first-completion`: durable receipt가 completed 상태와 50/50 보고보다 먼저다.
 - `pass-only-final-milestone`: 모든 필수 gate가 `PASS`다.
+- `measured-quality-report`: 상태 관리자가 현재 품질 PASS를 검사하고 보고서 hash를 기록했다.
+- `final-regression-report`: 상태 관리자가 여섯 전체 회귀 검사와 최종 HTML 결속을 검사하고 불변 QA 보고서 hash를 기록했다.
+- `final-desktop-screenshot`: 최종 브라우저 검사의 desktop 화면 증거가 존재한다.
+- `final-mobile-screenshot`: 최종 브라우저 검사의 mobile 화면 증거가 존재한다.
+- `final-visual-inspection`: 최종 화면과 전체 screenshot·design 회귀 검사를 실제로 열어 시각 검토했다.
 
 보고서와 milestone을 수락 증거로 제출하고 현재 단계에서 멈춘다.
