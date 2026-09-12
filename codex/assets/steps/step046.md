@@ -5,6 +5,9 @@ phase: e2e
 
 # Step 46 - Playwright 스크린샷 기반 상세 E2E 테스트
 
+이전 버전에서 완료한 44단계의 보고서를 입력으로 읽을 때는
+`docs/STEP044-MIGRATION.md`의 입력 호환 절차를 따른다.
+
 ## 목표
 
 선택된 디자인과 현재 layout 검증을 기준으로 실제 화면·뷰포트·상태 조합을 실행하고,
@@ -17,7 +20,7 @@ phase: e2e
 - 입력: `step_archive/step038_smoke_test.md`
 - 입력: `dist/index.html`
 - 입력: `step_archive/outputs/step039_검증_r1.md`
-- 입력: `step_archive/step044_html컴포넌트화.md`
+- 입력: `step_archive/step044_routing검증.md`
 - 입력: `step_archive/outputs/trust5_r2.md`
 - 입력: `step_archive/step045_e2e테스트결과.md`
 - 필수 선행 항목: `step030`, `step038`, `step039`, `step044`, `step045`

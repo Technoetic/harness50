@@ -3318,7 +3318,7 @@ const EXPECTED_REVIEW_ACCEPTANCE_DESCRIPTIONS = {
     "bounded-pass-loop": "Requires an evidenced PASS within five rounds with no unresolved Critical or Important finding."
   },
   step044: {
-    "html-componentization-report": "Stores routing integration, semantic structure, source reference integrity, accessibility, current build evidence, and independent review without requiring HTML component extraction.",
+    "routing-integration-report": "Stores routing integration, semantic structure, source reference integrity, accessibility, current build evidence, and independent review.",
     "review-milestone": "Stores the second quality milestone only after routing, build, structure, and accessibility gates pass.",
     "project-build-command": "Runs the exact non-optional build script declared by the project manifest.",
     "external-assets-only": "Confirms development JavaScript and CSS remain external while the build bundles them into one self-contained HTML with its inert route manifest.",
@@ -3368,7 +3368,7 @@ const EXPECTED_REVIEW_TARGET_SHA256 = Object.freeze({
   step041: "c7062942a31f2ce520dfdcad0634082be2a21500ead63cc402fda1be6240e19d",
   step042: "a94fcec2f5371b57985e37587356aa00a866af34adaaf0c7cd9832812ad74ca0",
   step043: "6d070a4fca012d4e3bfddbcd7d59cc3fdcd651dc9031bb9a64b10fb315960e4b",
-  step044: "5d9e4c5f1bee1d9b55da7443a12047bcd68c2fb4f0d36fe60da5ca18e93086dc"
+  step044: "3c16321a6741e5efa04d10aa9173ba50a19eb625f13c5abd47a12491bc2f8023"
 });
 
 async function assertReviewTargetDigests(root) {
@@ -3540,7 +3540,7 @@ const EXPECTED_REVIEW_ROWS = [
     phase: "review",
     source: "assets/steps/step042.md",
     target: "codex/assets/steps/step042.md",
-    source_sha256: "7f86d04d8afaf23759534c13826dfc9f172d3e3d477de8da836e6ea1d9f97700",
+    source_sha256: "de60366a82b20ca40f7d8fa0fb43df0194d723039155f0ee6714df1fdff83e16",
     inputs: [
       "step_archive/step030_레이아웃설계_chunk1.md",
       "step_archive/step030_전체설계_chunk1.md",
@@ -3611,7 +3611,7 @@ const EXPECTED_REVIEW_ROWS = [
     phase: "review",
     source: "assets/steps/step044.md",
     target: "codex/assets/steps/step044.md",
-    source_sha256: "7f88c58de5042dc9ce1f70cabea06e3e65bc21897eda121a4cb2d27c3c644cd3",
+    source_sha256: "bad68534ce5d04e52a1b4ff933f15fcb5dcaa6a03958f695810b044682489f35",
     inputs: [
       "step_archive/step030_레이아웃설계_chunk1.md",
       "step_archive/step030_전체설계_chunk1.md",
@@ -3624,7 +3624,7 @@ const EXPECTED_REVIEW_ROWS = [
       "step_archive/outputs/step043_검증_r1.md"
     ],
     outputs: [
-      "step_archive/step044_html컴포넌트화.md",
+      "step_archive/step044_routing검증.md",
       "step_archive/outputs/trust5_r2.md"
     ],
     requires: ["step030", "step038", "step041", "step042", "step043"],
@@ -3632,7 +3632,7 @@ const EXPECTED_REVIEW_ROWS = [
     network: false,
     visual_review: false,
     acceptance: [
-      { id: "html-componentization-report", kind: "artifact", required: true, path: "step_archive/step044_html컴포넌트화.md" },
+      { id: "routing-integration-report", kind: "artifact", required: true, path: "step_archive/step044_routing검증.md" },
       { id: "review-milestone", kind: "artifact", required: true, path: "step_archive/outputs/trust5_r2.md" },
       { id: "project-build-command", kind: "command", required: true, command_pattern: REVIEW_BUILD_COMMAND_PATTERN },
       { id: "external-assets-only", kind: "check", required: true },
@@ -3671,9 +3671,9 @@ test("review source hashes bind reviewed source steps 039 through 044", async ()
     step039: "b358ba3251da565f3e80db67de46f2664ee786690c48bfda7735dfebb410c209",
     step040: "aa8df1be9b10bc353155236fbb309cf55703a6508d7cbf68b0abf32da28509b8",
     step041: "d3bd6bc9850aa09868a3925349fd826a898230a5200e1a384f14d058921b883c",
-    step042: "7f86d04d8afaf23759534c13826dfc9f172d3e3d477de8da836e6ea1d9f97700",
+    step042: "de60366a82b20ca40f7d8fa0fb43df0194d723039155f0ee6714df1fdff83e16",
     step043: "620c977e80e36664ef3170fd2b5235cf75058f111ee0fb274dcf3c8d267d1349",
-    step044: "7f88c58de5042dc9ce1f70cabea06e3e65bc21897eda121a4cb2d27c3c644cd3"
+    step044: "bad68534ce5d04e52a1b4ff933f15fcb5dcaa6a03958f695810b044682489f35"
   });
 });
 
@@ -4240,7 +4240,7 @@ const EXPECTED_E2E_ROWS = [
     phase: "e2e",
     source: "assets/steps/step045.md",
     target: "codex/assets/steps/step045.md",
-    source_sha256: "4a13caa838c3842cee57b653b4fc6811cb05194742f9af3e0777923567f3663f",
+    source_sha256: "8089e3d3f2d5efdedf229e3a81c68515e091219f81d83d965939b7b05a3bb414",
     inputs: [
       "step_archive/TOPIC/TOPIC.md",
       "step_archive/step001_preflight.md",
@@ -4249,7 +4249,7 @@ const EXPECTED_E2E_ROWS = [
       "step_archive/step031_환경준비.md",
       "step_archive/step038_smoke_test.md",
       "dist/index.html",
-      "step_archive/step044_html컴포넌트화.md",
+      "step_archive/step044_routing검증.md",
       "step_archive/outputs/trust5_r2.md"
     ],
     outputs: ["step_archive/step045_e2e테스트결과.md"],
@@ -4277,14 +4277,14 @@ const EXPECTED_E2E_ROWS = [
     phase: "e2e",
     source: "assets/steps/step046.md",
     target: "codex/assets/steps/step046.md",
-    source_sha256: "a69ec0f629cd66eba1af3bddff15b4e046c7e920afdc344a5f5ac9833fa0d216",
+    source_sha256: "026f5677bbb5ad91e1349e649704cad970958dbb0c049b1f1172ee6555a7410a",
     inputs: [
       "step_archive/step030_레이아웃설계_chunk1.md",
       "step_archive/step030_전체설계_chunk1.md",
       "step_archive/step038_smoke_test.md",
       "dist/index.html",
       "step_archive/outputs/step039_검증_r1.md",
-      "step_archive/step044_html컴포넌트화.md",
+      "step_archive/step044_routing검증.md",
       "step_archive/outputs/trust5_r2.md",
       "step_archive/step045_e2e테스트결과.md"
     ],
@@ -4315,12 +4315,12 @@ const EXPECTED_E2E_ROWS = [
     phase: "e2e",
     source: "assets/steps/step047.md",
     target: "codex/assets/steps/step047.md",
-    source_sha256: "7694b4bef3a83bcd66c0b12f0d311258765fc43a8f65041b9a8cbcc46481b5ef",
+    source_sha256: "272e528db45d7fd051fec4daf6ffd37ee08d714e9b5b603df6339bb953060572",
     inputs: [
       "step_archive/step030_레이아웃설계_chunk1.md",
       "step_archive/step038_smoke_test.md",
       "dist/index.html",
-      "step_archive/step044_html컴포넌트화.md",
+      "step_archive/step044_routing검증.md",
       "step_archive/outputs/trust5_r2.md",
       "step_archive/step046_screenshot_e2e.md",
       "step_archive/screenshots/e2e/step046-primary.png"
@@ -4355,12 +4355,12 @@ const EXPECTED_E2E_ROWS = [
     phase: "e2e",
     source: "assets/steps/step048.md",
     target: "codex/assets/steps/step048.md",
-    source_sha256: "88101a5a78ce7119a56ab3d330df93dc29483ded8a631555a1f2b3f5f8a939af",
+    source_sha256: "720a4b0226434dfa26020469722b434e2ab63c3d620a32dc2b0d732537d7a1a5",
     inputs: [
       "step_archive/step030_레이아웃설계_chunk1.md",
       "step_archive/step038_smoke_test.md",
       "dist/index.html",
-      "step_archive/step044_html컴포넌트화.md",
+      "step_archive/step044_routing검증.md",
       "step_archive/outputs/trust5_r2.md",
       "step_archive/step046_screenshot_e2e.md",
       "step_archive/screenshots/e2e/step046-primary.png",
@@ -4398,7 +4398,7 @@ const EXPECTED_E2E_ROWS = [
     phase: "e2e",
     source: "assets/steps/step049.md",
     target: "codex/assets/steps/step049.md",
-    source_sha256: "efa6a33e312809cac66523dd0313a45c937cf4cc856fb7eb75dd632d5e21a124",
+    source_sha256: "c49b30ec59d0550ca3e3352b3aebbb597afc6c1e698bdaf3e992b7765a152a43",
     inputs: [
       "step_archive/step030_레이아웃설계_chunk1.md",
       "step_archive/step030_전체설계_chunk1.md",
@@ -4407,7 +4407,7 @@ const EXPECTED_E2E_ROWS = [
       "step_archive/outputs/step040_검증.md",
       "step_archive/screenshots/compare-awwwards-applied-r1.png",
       "step_archive/outputs/step043_검증_r1.md",
-      "step_archive/step044_html컴포넌트화.md",
+      "step_archive/step044_routing검증.md",
       "step_archive/outputs/trust5_r2.md",
       "step_archive/step047_keyboard검증.md",
       "step_archive/step048_마우스검증.md"
@@ -4440,11 +4440,11 @@ const EXPECTED_E2E_ROWS = [
     phase: "e2e",
     source: "assets/steps/step050.md",
     target: "codex/assets/steps/step050.md",
-    source_sha256: "6bc79448dfccea20d9df78ad77b910af12613ac47da4fd1aa09b9b001cd78620",
+    source_sha256: "9da2606a4432154c076f073c707961487ed7990544310d8e91c9f38d1fbd3807",
     inputs: [
       "step_archive/step038_smoke_test.md",
       "dist/index.html",
-      "step_archive/step044_html컴포넌트화.md",
+      "step_archive/step044_routing검증.md",
       "step_archive/outputs/trust5_r2.md",
       "step_archive/step045_e2e테스트결과.md",
       "step_archive/step046_screenshot_e2e.md",
@@ -4510,12 +4510,12 @@ test("e2e source hashes bind reviewed source steps 045 through 050", async () =>
   const index = await loadIndex(repoRoot);
   const hashes = await recordSourceHashes(repoRoot, index.steps.slice(44, 50));
   assert.deepEqual(hashes, {
-    step045: "4a13caa838c3842cee57b653b4fc6811cb05194742f9af3e0777923567f3663f",
-    step046: "a69ec0f629cd66eba1af3bddff15b4e046c7e920afdc344a5f5ac9833fa0d216",
-    step047: "7694b4bef3a83bcd66c0b12f0d311258765fc43a8f65041b9a8cbcc46481b5ef",
-    step048: "88101a5a78ce7119a56ab3d330df93dc29483ded8a631555a1f2b3f5f8a939af",
-    step049: "efa6a33e312809cac66523dd0313a45c937cf4cc856fb7eb75dd632d5e21a124",
-    step050: "6bc79448dfccea20d9df78ad77b910af12613ac47da4fd1aa09b9b001cd78620"
+    step045: "8089e3d3f2d5efdedf229e3a81c68515e091219f81d83d965939b7b05a3bb414",
+    step046: "026f5677bbb5ad91e1349e649704cad970958dbb0c049b1f1172ee6555a7410a",
+    step047: "272e528db45d7fd051fec4daf6ffd37ee08d714e9b5b603df6339bb953060572",
+    step048: "720a4b0226434dfa26020469722b434e2ab63c3d620a32dc2b0d732537d7a1a5",
+    step049: "c49b30ec59d0550ca3e3352b3aebbb597afc6c1e698bdaf3e992b7765a152a43",
+    step050: "9da2606a4432154c076f073c707961487ed7990544310d8e91c9f38d1fbd3807"
   });
 });
 
@@ -4529,12 +4529,12 @@ test("e2e acceptance descriptions reject placeholder-wide mutation", async () =>
 });
 
 const EXPECTED_E2E_TARGET_SHA256 = Object.freeze({
-  step045: "f46fde048352ec726f02c7e36d5f19828901d621cd48fabd1acc0bb24885c273",
-  step046: "6ac57942ca41f3f890c175ce7855cf65832fb8ba20be136d8a26feb5829920b1",
-  step047: "91f410ddd5cb05eef476734abdc2f9b1260df0851006ab39e86685244fa52273",
-  step048: "eadd652ad35f6c9af3aa07b8a348b12aed4d7c6ff8e31753a6efefd8835ad491",
-  step049: "233f1407fc2d81901f2a78a1f3f339f79739452c97b7e1b6fd3d5b4954a72c60",
-  step050: "02ee8c5df036fc5641708fdca6cf73906f3dfae25a1b584b8a4dad0aae530502"
+  step045: "eb37f931ff0670a67ff85a0d94a7370797f7cac6afc46841eef8d4d09579af85",
+  step046: "2c0245ee110dc59cc12e55a89bbebb461d6c33866277d2f5b61629f6455a8ddd",
+  step047: "d2ed158f4fb15f52e21d76438776bbe0b1e5a0124a46eb4e7bd511c31398dfde",
+  step048: "d858de0ea976dbce2a85c62ec71722964d2615528c2235fdf8e877b1d2a1558b",
+  step049: "5f84740313199fb1b2de9eaf6fa956642b7b25f701a599b7f5ce7515dc7046ac",
+  step050: "c803957f478a2159bc4f836cc3edc7b561a04fb90c5f3ab4edd16287863a2b60"
 });
 
 async function assertE2eTargetDigests(root) {

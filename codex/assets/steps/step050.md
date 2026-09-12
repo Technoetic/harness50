@@ -5,6 +5,9 @@ phase: e2e
 
 # Step 50 - 콘솔 에러 수집 및 해결
 
+이전 버전에서 완료한 44단계의 보고서를 입력으로 읽을 때는
+`docs/STEP044-MIGRATION.md`의 입력 호환 절차를 따른다.
+
 ## 목표
 
 모든 도달 가능 application 상태에서 browser 오류 표면을 검사하고 0개임을 독립적으로
@@ -15,7 +18,7 @@ phase: e2e
 
 - 입력: `step_archive/step038_smoke_test.md`
 - 입력: `dist/index.html`
-- 입력: `step_archive/step044_html컴포넌트화.md`
+- 입력: `step_archive/step044_routing검증.md`
 - 입력: `step_archive/outputs/trust5_r2.md`
 - 입력: `step_archive/step045_e2e테스트결과.md`
 - 입력: `step_archive/step046_screenshot_e2e.md`

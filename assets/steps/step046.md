@@ -5,6 +5,9 @@ persistence: session
 
 # Step 46 - Playwright 스크린샷 기반 상세 E2E 테스트
 
+이전 버전에서 완료한 44단계의 보고서를 입력으로 읽을 때는
+`docs/STEP044-MIGRATION.md`의 입력 호환 절차를 따른다.
+
 <!-- MOAI-ENRICHED v1 -->
 > **📐 Plan → Run → Sync** (MoAI-ADK 워크플로우)
 > - **Plan**: 본 Step의 SPEC 자동 생성 `step_archive/specs/SPEC-046.md` 를 먼저 읽고 Acceptance 기준을 확정한다.

@@ -13,7 +13,7 @@ persistence: session
 > **📐 Plan → Run → Sync** (MoAI-ADK 워크플로우)
 > - **Plan**: 본 Step의 SPEC 자동 생성 `step_archive/specs/SPEC-044.md` 를 먼저 읽고 Acceptance 기준을 확정한다.
 > - **Run**: 본문 지침대로 실행. 구현 산출물에는 `@MX:NOTE` 최소 1개 부착 (위험 시 `@MX:WARN` + `@MX:REASON`, 계약 시 `@MX:ANCHOR` + `@MX:REASON`, 미완료 시 `@MX:TODO`). MoAI mx-tag-protocol SoT 준수.
-> - **Sync**: 결과 파일 `step_archive/step044_html컴포넌트화.md`와 `step_archive/outputs/trust5_r2.md`를 저장하고 검증 결과를 보고한다.
+> - **Sync**: 결과 파일 `step_archive/step044_routing검증.md`와 `step_archive/outputs/trust5_r2.md`를 저장하고 검증 결과를 보고한다.
 >
 > **모델 정책**: 조사·구현 서브에이전트 = **haiku** (CLAUDE.md 정책 준수). 평가 라운드만 sonnet.
 >
@@ -26,10 +26,9 @@ persistence: session
 semantic document structure, 접근성, reference, current build와 독립 quality
 milestone gate도 함께 보존한다.
 
-산출물 `step_archive/step044_html컴포넌트화.md`는 45~50단계와의 호환을 위해 유지하는
-legacy 경로다. 이름을 바꾸지 말고 routing·구조·접근성·build 증거를 기록한다. legacy
-파일명은 HTML component 분리를 요구한다는 뜻이 아니다. 이 단계의
-내부 fixture나 정적 검사는 실제 배포 rewrite 증거가 아니며, 실제 배포 direct visit와
+라우팅 검증 보고서는 `step_archive/step044_routing검증.md`에 기록한다.
+이전 버전 작업의 재개는 `docs/STEP044-MIGRATION.md`의 입력 호환 절차를 따른다.
+이 단계의 내부 fixture나 정적 검사는 실제 배포 rewrite 증거가 아니며, 실제 배포 direct visit와
 refresh 검증은 45단계에서 이미 승인되고 준비된 배포 대상이 있을 때만 수행한다.
 배포 대상이 없으면 로컬 검증과 배포 검증 대기를 구분하며, 50단계는 현재 HTML에 결합된 최종 browser 보고서를 검증한다.
 
@@ -53,7 +52,7 @@ regular nonempty UTF-8 파일이고 `<html`/`</html>` boundary를 갖는지도 �
 
 ## routing 통합과 회귀 점검
 
-`docs/ROUTING.md`를 기준으로 다음을 모두 실행하고 명령, 관측값과 판정을 legacy 보고서에
+`docs/ROUTING.md`를 기준으로 다음을 모두 실행하고 명령, 관측값과 판정을 라우팅 검증 보고서에
 남긴다.
 
 1. 단일 최종 `dist/index.html`의 route manifest, `data-harness-screen` root와 canonical
@@ -86,7 +85,7 @@ regular nonempty UTF-8 파일이고 `<html`/`</html>` boundary를 갖는지도 �
 ## 실행과 독립 검증
 
 가능하면 라우팅 통합 구현자 역할과 milestone 독립 검증자 역할을 분리한다. 구현자는 선언한
-routing ownership만 변경한다. 독립 검증자는 application source, legacy 보고서, milestone을
+routing ownership만 변경한다. 독립 검증자는 application source, 라우팅 검증 보고서, milestone을
 수정하지 않고 structure·accessibility·reference·build와 다섯 routing 완료 조건을 처음부터
 재검사한다. 위임할 수 없으면 한 실행자가 역할을 분리해 순서대로 수행하며 위임했다고
 기록하지 않는다.
@@ -94,11 +93,11 @@ routing ownership만 변경한다. 독립 검증자는 application source, legac
 모든 필수 검사가 `PASS`인 뒤에만 `step_archive/outputs/trust5_r2.md`를 만든다. 누락,
 실행하지 않은 검사, 오래된 증거와 실패 결과는 `PASS`가 아니다. 오류를 분석하고 수정한 뒤
 최대 3회까지 재검사할 수 있다. 3회 뒤에도 실패하면 시도별 명령, exit code와 원인을
-legacy 보고서에 기록하고 **현재 단계에서 정지한다**. 실패 상태로 다음 Step을 진행하지 않는다.
+라우팅 검증 보고서에 기록하고 **현재 단계에서 정지한다**. 실패 상태로 다음 Step을 진행하지 않는다.
 
 ## 완료 조건
 
-- `html-componentization-report`: 호환용 legacy 보고서에 routing·구조·접근성·build 증거가 기록됐으며 component 분리를 요구하지 않는다.
+- `routing-integration-report`: 라우팅 검증 보고서에 routing·구조·접근성·build 증거와 독립 판정이 기록됐다.
 - `review-milestone`: 모든 필수 gate 뒤 두 번째 quality milestone이 기록됐다.
 - `project-build-command`: manifest의 정확한 non-optional build가 성공했다.
 - `external-assets-only`: 개발 source의 JS/CSS external 정책과 final bundling·JSON data manifest가 함께 검증됐다.

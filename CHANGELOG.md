@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.4.3 — 2026-09-12
+
+- Name the Step 44 report `step044_routing검증.md` and its acceptance item `routing-integration-report`, matching the routing integration and validation work. Update both hosts and all downstream input contracts together.
+- Keep the old report name and acceptance ID only in the migration guide and historical receipt compatibility. Fresh completion requires the new pair and all current quality gates; replay preserves original receipts and artifact digests.
+- Explain how completed native and imported workspaces can read prior reports as historical input without fabricating current validation evidence. Remove Step 42's assumption that HTML was already componentized.
+
 ## 2.4.2 — 2026-09-12
 
 - Preserve the installed Codex continuous-execution fixes: process successive manager-selected work units within the active turn, and keep a pending continuation paired with its Stop delivery while resuming. Existing permissions, pause behavior and per-step completion gates still apply.

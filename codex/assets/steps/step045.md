@@ -5,6 +5,9 @@ phase: e2e
 
 # Step 45 - E2E 테스트
 
+이전 버전에서 완료한 44단계의 보고서를 입력으로 읽을 때는
+`docs/STEP044-MIGRATION.md`의 입력 호환 절차를 따른다.
+
 ## 목표
 
 현재 build를 실제 사용자 흐름으로 검증한다. 주제와 설계에서 동적으로 시나리오를
@@ -20,7 +23,7 @@ suite가 재현 가능하게 통과하는지 독립적으로 확인한다.
 - 입력: `step_archive/step031_환경준비.md`
 - 입력: `step_archive/step038_smoke_test.md`
 - 입력: `dist/index.html`
-- 입력: `step_archive/step044_html컴포넌트화.md`
+- 입력: `step_archive/step044_routing검증.md`
 - 입력: `step_archive/outputs/trust5_r2.md`
 - 필수 선행 항목: `step001`, `step030`, `step031`, `step038`, `step044`
 - 산출물: `step_archive/step045_e2e테스트결과.md`

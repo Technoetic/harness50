@@ -5,6 +5,9 @@ phase: e2e
 
 # Step 49 - Playwright 디자인 시각 검증 (독립 검증 루프)
 
+이전 버전에서 완료한 44단계의 보고서를 입력으로 읽을 때는
+`docs/STEP044-MIGRATION.md`의 입력 호환 절차를 따른다.
+
 ## 목표
 
 선택된 디자인 token과 persisted research evidence를 현재 application의 대표 화면과
@@ -19,7 +22,7 @@ component에 대조하고, 보정자와 독립 판정자를 분리한 최종 시
 - 입력: `step_archive/outputs/step040_검증.md`
 - 입력: `step_archive/screenshots/compare-awwwards-applied-r1.png`
 - 입력: `step_archive/outputs/step043_검증_r1.md`
-- 입력: `step_archive/step044_html컴포넌트화.md`
+- 입력: `step_archive/step044_routing검증.md`
 - 입력: `step_archive/outputs/trust5_r2.md`
 - 입력: `step_archive/step047_keyboard검증.md`
 - 입력: `step_archive/step048_마우스검증.md`

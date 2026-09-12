@@ -32,14 +32,13 @@ reference와 current build 계약도 함께 보존한 뒤 독립 검증으로
 - 입력: `step_archive/screenshots/compare-awwwards-applied-r1.png`
 - 입력: `step_archive/outputs/step043_검증_r1.md`
 - 필수 선행 항목: `step030`, `step038`, `step041`, `step042`, `step043`
-- 산출물: `step_archive/step044_html컴포넌트화.md`
+- 산출물: `step_archive/step044_routing검증.md`
 - 산출물: `step_archive/outputs/trust5_r2.md`
 - 네트워크: 사용하지 않는다.
 - 시각 검토: 필요하지 않다.
 
-`step_archive/step044_html컴포넌트화.md`는 45~50단계가 참조하는 호환용 legacy 경로다.
-파일명은 바꾸지 않되 이 단계의 routing·구조·접근성·build 증거를 기록한다. 이 legacy
-파일명은 HTML component 분리를 요구한다는 뜻이 아니다.
+라우팅 검증 보고서는 위 산출물 경로에 기록한다. 이전 버전 작업의 재개는
+`docs/STEP044-MIGRATION.md`의 입력 호환 절차를 따른다.
 
 ## 실행 역할
 
@@ -142,14 +141,14 @@ build, structure, accessibility와 routing 검사가 모두 `PASS`인 뒤에만
 exit code와 원인을 보고서에 기록하고 현재 단계에서 멈춘다. 실패한 상태로 45단계에
 진행하지 않는다.
 
-legacy 경로 `step_archive/step044_html컴포넌트화.md`에는 source와 rendered 구조,
+`step_archive/step044_routing검증.md`에는 source와 rendered 구조,
 reference·accessibility 결과, route/screen/URL map, backend capability와 선택,
 traversal·native behavior·server fallback 검토, 정확한 build command·exit code, dist
 metadata와 digest, 독립 판정을 기록한다.
 
 ## 완료 조건
 
-- `html-componentization-report`: 호환용 legacy 보고서에 routing·구조·접근성·build 증거가 기록됐으며 component 분리를 요구하지 않는다.
+- `routing-integration-report`: 라우팅 검증 보고서에 routing·구조·접근성·build 증거와 독립 판정이 기록됐다.
 - `review-milestone`: 모든 필수 gate 뒤 두 번째 quality milestone이 기록됐다.
 - `project-build-command`: manifest의 정확한 non-optional build가 성공했다.
 - `external-assets-only`: 개발 source의 JavaScript와 CSS가 external reference이며 final bundling과 JSON data manifest가 검증됐다.

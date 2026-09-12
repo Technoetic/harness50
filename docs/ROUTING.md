@@ -136,12 +136,12 @@ screen regions in the same HTML can be selected directly from the current URL.
 Development JavaScript and CSS stay in separate source files; the build bundles
 them into the one self-contained HTML, including its inert JSON route manifest.
 
-For compatibility, Step 44 keeps the report path
-`step_archive/step044_html컴포넌트화.md` and its existing artifact acceptance ID.
-The legacy name does not require componentization. The report records routing,
-structure, accessibility and build evidence. Missing or
-failed routing checks block a new Step 44 completion. This does not rewrite or
-revalidate historical completion receipts. Step 44 reviews the server fallback
+Step 44 writes `step_archive/step044_routing검증.md` under the
+`routing-integration-report` artifact acceptance ID. Steps 45–50 consume this
+routing, structure, accessibility and build evidence. Missing or failed routing
+checks block a new completion. Existing workspaces follow
+[the Step 44 migration guide](STEP044-MIGRATION.md); historical receipts stay
+immutable and are not promoted to current validation evidence. Step 44 reviews the server fallback
 configuration and local direct entry; Step 45 requires local history-mode direct
 entry and reload, and repeats them on a real deployment only when an authorized
 target is already available. Otherwise it records deployment verification as

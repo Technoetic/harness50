@@ -5,6 +5,9 @@ phase: e2e
 
 # Step 47 - 키보드 인터랙션 시각 검증
 
+이전 버전에서 완료한 44단계의 보고서를 입력으로 읽을 때는
+`docs/STEP044-MIGRATION.md`의 입력 호환 절차를 따른다.
+
 ## 목표
 
 현재 application의 모든 적용 가능한 keyboard interaction과 accessibility behavior를
@@ -15,7 +18,7 @@ phase: e2e
 - 입력: `step_archive/step030_레이아웃설계_chunk1.md`
 - 입력: `step_archive/step038_smoke_test.md`
 - 입력: `dist/index.html`
-- 입력: `step_archive/step044_html컴포넌트화.md`
+- 입력: `step_archive/step044_routing검증.md`
 - 입력: `step_archive/outputs/trust5_r2.md`
 - 입력: `step_archive/step046_screenshot_e2e.md`
 - 입력: `step_archive/screenshots/e2e/step046-primary.png`

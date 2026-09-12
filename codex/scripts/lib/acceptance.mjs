@@ -545,6 +545,16 @@ function historicalReplayContract(contract, persistedEvidence) {
         description: "Historical c8 version check from published b4b4b8f.", command: "npx c8 --version" }
       : item) };
   }
+  if (contract.number === 44 && ids.has("html-componentization-report") && !ids.has("routing-integration-report")) {
+    // Only immutable receipts may retain the published report name. All other
+    // declarations, exact evidence matching and durable digests stay required.
+    return { ...contract, acceptance: contract.acceptance.map(item => (
+      item.id === "routing-integration-report" && item.kind === "artifact" &&
+      item.path === "step_archive/step044_routing검증.md"
+        ? { ...item, id: "html-componentization-report", path: "step_archive/step044_html컴포넌트화.md" }
+        : item
+    )) };
+  }
   const finalVisualIds = ["final-desktop-screenshot", "final-mobile-screenshot", "final-visual-inspection"];
   if (contract.number === 50 && ![...finalVisualIds, ...runtimeReportIds(50)].some(id => ids.has(id))) {
     // These three declarations and visual_review were added together. A receipt
