@@ -1,0 +1,16 @@
+{
+  "name": "harness50-browser-verifier",
+  "version": "2.5.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test tests/browser-output.test.mjs tests/navigation-api.test.mjs"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "playwright": "1.63.0"
+  }
+}

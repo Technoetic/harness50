@@ -30,13 +30,13 @@ disable-model-invocation: false
 
 ### 1단계: 구현물 스크린샷 촬영
 
-Playwright로 현재 구현 상태를 3가지 뷰포트(desktop 1920x1080, tablet 768x1024, mobile 390x844)로 캡처한다.
+사용 가능한 브라우저 백엔드(Playwright 또는 Aside CLI — `docs/BROWSER-TOOLS.md`의 절차표 참조)로 현재 구현 상태를 3가지 뷰포트(desktop 1920x1080, tablet 768x1024, mobile 390x844)로 캡처한다. Aside에서는 고정 탭 뷰포트 대신 해당 크기의 iframe 호스트 페이지와 `clip` 스크린샷을 쓴다.
 
 저장 경로: step_archive/screenshots/eval-rN-{viewport}.png
 
 스크린샷은 반드시 `fullPage: true` 옵션으로 전체 페이지를 캡처한다.
 
-**Playwright 실패 시 폴백:**
+**브라우저 백엔드 실패 시 폴백(어느 백엔드든 동일):**
 스크린샷 촬영이 실패해도 확보된 증거로 진단을 남길 수 있다.
 - 디자인 충실도 항목은 0점으로 기록하고 사유를 명시
 - 나머지 3개 항목(기능 완성도, 코드 품질, 성능)은 코드 분석 기반으로 평가 진행

@@ -5,16 +5,16 @@ import { mkdir, readFile, symlink, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
-import { makeWorkspace } from '../codex/tests/helpers/workspace.mjs';
-import { verifyOutput } from '../scripts/verify-output.mjs';
-import { routeManifestScript } from '../codex/tests/helpers/routing.mjs';
+import { makeWorkspace } from '../../codex/tests/helpers/workspace.mjs';
+import { verifyOutput } from '../../scripts/verify-output.mjs';
+import { routeManifestScript } from '../../codex/tests/helpers/routing.mjs';
 
-const browserOptions = process.env.HARNESS50_BROWSER_PATH ? { executablePath: process.env.HARNESS50_BROWSER_PATH } : {};
+const browserOptions = { backend: 'playwright', ...(process.env.HARNESS50_BROWSER_PATH ? { executablePath: process.env.HARNESS50_BROWSER_PATH } : {}) };
 
 test('browser CLI invoked through a directory alias rejects a missing artifact', async () => {
   const root = await makeWorkspace();
   const alias = join(root, 'cli');
-  await symlink(fileURLToPath(new URL('../scripts/', import.meta.url)), alias, process.platform === 'win32' ? 'junction' : 'dir');
+  await symlink(fileURLToPath(new URL('../../scripts/', import.meta.url)), alias, process.platform === 'win32' ? 'junction' : 'dir');
   await assert.rejects(promisify(execFile)(process.execPath, [join(alias, 'verify-output.mjs'), '--workspace', root]),
     error => error.code === 1 && JSON.parse(error.stdout).verdict === 'FAIL');
 });
@@ -169,7 +169,7 @@ test('errors, overflow, accessibility and network are checked on non-initial scr
 
 test('the shipped three-screen example passes the measured verifier',async()=>{
   const root=await makeWorkspace();await mkdir(join(root,'dist'));
-  await writeFile(join(root,'dist/index.html'),await readFile(new URL('../examples/routed-single-file.html',import.meta.url)));
+  await writeFile(join(root,'dist/index.html'),await readFile(new URL('../../examples/routed-single-file.html',import.meta.url)));
   const report=await verifyOutput(root,browserOptions);
   assert.equal(report.verdict,'PASS',JSON.stringify(report));
   assert.deepEqual(report.routing.routes.map(route=>route.id),['home','orders','settings']);

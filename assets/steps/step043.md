@@ -43,7 +43,7 @@ Step 37에서 구현된 CSS가 Awwwards 조사 결과를 충실히 반영했는�
 
 ### 1단계: 구현 스크린샷 촬영
 
-Playwright로 현재 구현의 스크린샷을 촬영하여 `step_archive/screenshots/compare-awwwards-applied-r1.png`에 저장한다.
+브라우저 자동화 도구(docs/BROWSER-TOOLS.md 절차표)로 현재 구현의 스크린샷을 촬영하여 `step_archive/screenshots/compare-awwwards-applied-r1.png`에 저장한다 (Aside 백엔드는 탭 고정 1440×900 — 실제 캡처 크기를 기록).
 
 ### 2단계: 검증 에이전트 (에이전트 B) 실행
 
@@ -116,7 +116,7 @@ Playwright로 현재 구현의 스크린샷을 촬영하여 `step_archive/screen
 
 ### 5단계: 재촬영 → 2단계로 돌아가기
 
-수정 후 Playwright로 스크린샷을 `step_archive/screenshots/compare-awwwards-applied-rN.png` (N = 다음 라운드 번호)로 재촬영하고, 2단계(에이전트 B 검증)부터 반복한다.
+수정 후 브라우저 자동화 도구로 스크린샷을 `step_archive/screenshots/compare-awwwards-applied-rN.png` (N = 다음 라운드 번호)로 재촬영하고, 2단계(에이전트 B 검증)부터 반복한다.
 
 ### 반복 제한: 최대 5라운드
 

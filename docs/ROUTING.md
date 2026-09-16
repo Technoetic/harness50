@@ -148,17 +148,17 @@ target is already available. Otherwise it records deployment verification as
 pending and scopes completion to the local artifact. Step 50 still requires the
 final schema-3 browser report bound to the current HTML.
 
-Run the verifier from a checkout with the pinned browser dependencies installed:
+Run the verifier from a checkout with one [browser backend](BROWSER-TOOLS.md)
+installed (Playwright in `browser-verifier/`, or the Aside CLI):
 
 ```text
-node "<validation-checkout>/scripts/verify-output.mjs" --workspace "<project-root>"
+node "<validation-checkout>/scripts/verify-output.mjs" --probe
+node "<validation-checkout>/scripts/verify-output.mjs" --workspace "<project-root>" --backend auto
 ```
 
-To select an installed browser explicitly, including Brave on Windows:
-
-```text
-node "<validation-checkout>/scripts/verify-output.mjs" --workspace "<project-root>" --executable-path "C:/Users/corei/AppData/Local/BraveSoftware/Brave-Browser/Application/brave.exe"
-```
+`--backend playwright` or `--backend aside` forces a backend; `auto` prefers Playwright
+and falls back to Aside. With the Playwright backend, `--executable-path "<browser-path>"`
+selects an installed Chromium-based browser explicitly.
 
 The browser report uses **schema version 3**, with the exact `routing` manifest,
 the final HTML SHA-256, and desktop/mobile results in two mandatory scenarios:

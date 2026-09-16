@@ -3,7 +3,7 @@ name: step046
 persistence: session
 ---
 
-# Step 46 - Playwright 스크린샷 기반 상세 E2E 테스트
+# Step 46 - 스크린샷 기반 상세 E2E 테스트
 
 이전 버전에서 완료한 44단계의 보고서를 입력으로 읽을 때는
 `docs/STEP044-MIGRATION.md`의 입력 호환 절차를 따른다.
@@ -38,7 +38,7 @@ persistence: session
 
 프로젝트 특성을 분석하여 테스트 범위와 검증 항목을 동적으로 결정한다.
 
-Playwright를 사용하여 스크린샷을 촬영하며 상세한 E2E 테스트를 수행한다.
+브라우저 자동화 도구(docs/BROWSER-TOOLS.md 절차표)로 스크린샷을 촬영하며 상세한 E2E 테스트를 수행한다.
 
 웹앱의 각 독립 화면은 `docs/ROUTING.md` manifest의 canonical URL로 직접 진입해
 촬영한다. viewport·URL·화면 ID·상태·스크린샷의 대응표를 기록하고 URL과 보이는

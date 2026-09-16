@@ -45,54 +45,30 @@ persistence: session
 - ❌ WebSearch 도구 (자동 차단 불가 - 수동 준수 필수)
 - ❌ 사전 지식만으로 문서 작성
 
-**반드시 Playwright로만 웹 데이터 수집:**
+**반드시 브라우저 자동화 도구(docs/BROWSER-TOOLS.md: Aside CLI 또는 Playwright)로만 웹 데이터 수집:**
 
 ### 실행 방법
 
-**1단계: 각 URL마다 Playwright 스크립트 실행**
+**1단계: 각 URL마다 브라우저 자동화 수집 절차 실행**
 
-각 서브에이전트에게 다음 템플릿으로 조사 지시:
+각 서브에이전트에게 다음 템플릿으로 조사 지시 (절차 이름: `browser-research-[N]`, 백엔드별 구체 API는 docs/BROWSER-TOOLS.md 절차표):
 
-```javascript
-// playwright-research-[N].js
-const { chromium } = require('playwright');
+1. 절차표 'Open the page' 행으로 `${TARGET_URL}` 방문
+2. 절차표 'Screenshot' 행으로 전체 페이지(fullPage) 캡처 → `step_archive/screenshots/research-${N}.png`
+   (Aside CLI는 실패 시 재시도(타임아웃 4000/8000/8000 ms) 뒤 세션 `./artifacts/`에 저장되므로 `step_archive/screenshots/`로 복사한다)
+3. 절차표 'Extract text / DOM metrics' 행으로 `document.body.innerText` 추출 → `step_archive/research-raw-${N}.txt` (UTF-8)
+4. 절차표 'Clean up' 행으로 탭/컨텍스트 닫기
 
-(async () => {
-  const browser = await chromium.launch();
-  const page = await browser.newPage();
-
-  // URL 방문
-  await page.goto('${TARGET_URL}');
-
-  // 스크린샷 저장
-  await page.screenshot({
-    path: 'step_archive/screenshots/research-${N}.png',
-    fullPage: true
-  });
-
-  // 텍스트 콘텐츠 추출
-  const content = await page.evaluate(() => {
-    return document.body.innerText;
-  });
-
-  // 결과 저장
-  const fs = require('fs');
-  fs.writeFileSync(
-    'step_archive/research-raw-${N}.txt',
-    content,
-    'utf8'
-  );
-
-  await browser.close();
-})();
-```
-
-**2단계: Bash 도구로 Playwright 실행**
+**2단계: Bash 도구로 수집 절차 실행 (선택 백엔드의 실행법은 docs/BROWSER-TOOLS.md)**
 
 ```bash
-node playwright-research-1.js
-node playwright-research-2.js
-node playwright-research-3.js
+# Playwright 백엔드
+node browser-research-1.js
+node browser-research-2.js
+...
+# Aside CLI 백엔드 (호출당 120초, 호출마다 새 세션, 스크립트는 인자 1개·28,000자 미만·import/require 불가)
+aside repl "<browser-research-1 스크립트 본문>"
+aside repl "<browser-research-2 스크립트 본문>"
 ...
 ```
 
@@ -136,7 +112,7 @@ Get-ChildItem "step016_조사결과_chunk*.md" | ForEach-Object {
 - **사전 지식만으로 문서 작성 절대 금지**
 
   - "내가 알기로는...", "일반적으로...", "보통..." 같은 표현 사용 시 즉시 중단
-  - 모든 정보는 **반드시 Playwright로 수집한 실제 웹 데이터**에서 가져와야 함
+  - 모든 정보는 **반드시 브라우저 자동화 도구로 수집한 실제 웹 데이터**에서 가져와야 함
   - 스크린샷과 원본 텍스트 파일이 없으면 해당 내용 작성 불가
 - **이 단계에서 절대로 GitHub를 조사하지 않는다.**
 - **이 단계에서 절대로 "planning.md"를 생성하지 않는다. 오직 조사만 한다.**
@@ -155,9 +131,9 @@ Get-ChildItem "step016_조사결과_chunk*.md" | ForEach-Object {
 **올바른 방식 (필수):**
 
 ```
-1. Bash: node playwright-research-topic1.js
+1. Bash: 브라우저 자동화 수집 절차 실행 (browser-research-topic1, docs/BROWSER-TOOLS.md)
 2. Read: step_archive/research-raw-topic1.txt
-3. 서브에이전트: "playwright-research-topic1.js 실행 결과:
+3. 서브에이전트: "browser-research-topic1 실행 결과:
    - 스크린샷: step_archive/screenshots/topic1.png
    - 원본 데이터: step_archive/research-raw-topic1.txt
    - 출처: https://example.com/topic1
@@ -165,7 +141,7 @@ Get-ChildItem "step016_조사결과_chunk*.md" | ForEach-Object {
 
    수집된 내용:
    'This technology is...'"
-→ ✅ Playwright 사용, 검증 가능
+→ ✅ 브라우저 자동화 도구로 수집, 검증 가능
 ```
 
 **조사결과는 청크 단위로 저장한다:**

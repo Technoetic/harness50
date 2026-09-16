@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.5.0 — 2026-09-16
+
+- Turn `scripts/verify-output.mjs` into a dispatcher over two browser verification backends. Playwright now lives isolated in `browser-verifier/` (its own `package.json`, used by CI and by machines that allow it); the new `aside` backend drives the Aside CLI (`aside repl`) on machines where Playwright is not allowed or not installed. Both produce the same schema-v3 report and four screenshots; the completion gate reads named fields only and does not distinguish backends.
+- Add `--backend auto|playwright|aside` (also `HARNESS50_BROWSER_BACKEND`), `--timeout <ms>` (the `timeoutMs` option; per chunk under Aside) and `--probe`, which prints backend availability and the `auto` selection without launching a browser. `auto` prefers Playwright and falls back to Aside; with neither installed the run fails with an explicit install message. Remove `playwright`/`@axe-core/playwright` from the root devDependencies.
+- Record a top-level `environment` block in the browser report (`backend`, `isolation`, `deadline_scope`, `viewport_mode`, `screenshot_mode`, `browser`, `dpr`, `color_scheme`, `reduced_motion`, `language`, `tool_version`) so shared-profile Aside evidence discloses the user's colour scheme, language, DPR and extensions instead of passing as fresh-context evidence.
+- Make the curriculum tool-neutral: Steps 3 and 4 are titled as browser-backend and accessibility-tool checks rather than Playwright/`@axe-core/playwright` installs, and Step 45 runs only the project's own `npm run e2e` command (`project-e2e-runner-only`) instead of prescribing `npx playwright test`.
+- Add `docs/BROWSER-TOOLS.md` with the availability order, the measured Aside workarounds (iframe mobile viewport, server-injected init script, CSP request blocking, dataset console bridge, `history.back()` via evaluate, screenshot retry (parity-flipping attempts, no primer), reload via `location.reload()` with an iframe re-creation fallback (script reloads are inert unless the Navigation API was removed), session artifacts directory, per-chunk origins), Aside limits and the `environment` block. Update `docs/QUALITY.md`, `docs/ROUTING.md`, `docs/RETIRED-VALIDATORS.md`, the evaluator skill and the README to refer to it; a passing schema-v3 report remains required while the backend is free.
+- Extend `hooks/validate-tools.sh`/`.ps1` with an `aside` tool (`aside --version`) and make the `axe` check tool-neutral (resolve `axe-core`, falling back to `@axe-core/playwright`).
+
+Validation includes automated contract/runtime tests and Aside CLI measurements on Windows. It does not attest to a native Linux/macOS Aside run, a live-model run of all 50 steps or a deployed application.
+
 ## 2.4.3 — 2026-09-12
 
 - Name the Step 44 report `step044_routing검증.md` and its acceptance item `routing-integration-report`, matching the routing integration and validation work. Update both hosts and all downstream input contracts together.

@@ -3,7 +3,7 @@ name: step049
 phase: e2e
 ---
 
-# Step 49 - Playwright 디자인 시각 검증 (독립 검증 루프)
+# Step 49 - 디자인 시각 검증 (독립 검증 루프)
 
 이전 버전에서 완료한 44단계의 보고서를 입력으로 읽을 때는
 `docs/STEP044-MIGRATION.md`의 입력 호환 절차를 따른다.

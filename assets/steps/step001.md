@@ -78,7 +78,7 @@ session_prompt: |
 |:---|:---|:---|:---|
 | Node.js | node --version | - | 필수 |
 | npm | npm --version | - | 필수 |
-| Playwright | npx playwright --version | npx playwright install chromium | 필수 |
+| 브라우저 검증 백엔드 (docs/BROWSER-TOOLS.md: Aside CLI 또는 Playwright) | 플러그인 체크아웃에서 node scripts/verify-output.mjs --probe (selected != null, 종료 코드 0) | docs/BROWSER-TOOLS.md 절차대로 백엔드 준비 (Aside: 앱 실행 + aside --version / Playwright: browser-verifier/ 에서 npm ci 후 chromium 설치) | 필수 |
 | Biome | npx biome --version | npm i -D @biomejs/biome | 필수 |
 | Stylelint | npx stylelint --version | npm i -D stylelint | 필수 |
 | Vitest/Jest | package.json·lockfile 설치 현황 조사 | 6단계 선택 후 설치 | 조사 |

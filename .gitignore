@@ -15,3 +15,6 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# browser-verifier (Playwright, CI only)
+browser-verifier/node_modules/

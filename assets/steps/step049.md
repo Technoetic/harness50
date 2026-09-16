@@ -3,7 +3,7 @@ name: step049
 persistence: session
 ---
 
-# Step 49 - Playwright 디자인 시각 검증 (독립 검증 루프)
+# Step 49 - 디자인 시각 검증 (독립 검증 루프)
 
 이전 버전에서 완료한 44단계의 보고서를 입력으로 읽을 때는
 `docs/STEP044-MIGRATION.md`의 입력 호환 절차를 따른다.
@@ -20,7 +20,7 @@ persistence: session
 
 프로젝트 유형, UI 특성, 대상 디바이스를 분석하여 검증 범위와 뷰포트를 동적으로 결정한다.
 
-Playwright로 주요 페이지/뷰를 스크린샷 촬영하고, Claude가 직접 Read하여 디자인 어색함을 점검한다.
+브라우저 자동화 도구(docs/BROWSER-TOOLS.md 절차표)로 주요 페이지/뷰를 스크린샷 촬영하고, Claude가 직접 Read하여 디자인 어색함을 점검한다.
 문제 발견 시 아래의 최대 5라운드 안에서 코드를 수정하고 재검증한다. 모든 필수 항목이 통과해야 완료한다.
 "웹 앱"이 아니면 프로젝트 유형에 적합한 시각 검증 방법을 선택한다.
 
@@ -105,14 +105,14 @@ Playwright로 주요 페이지/뷰를 스크린샷 촬영하고, Claude가 직�
 ## 실행 방법
 
 1. 사전 분석 결과를 기반으로 뷰포트 목록과 검증 대상 페이지/뷰 결정
-2. 각 조합(뷰포트 × 페이지)마다 Playwright 스크립트 작성 및 실행
+2. 각 조합(뷰포트 × 페이지)마다 브라우저 자동화 절차 작성 및 실행
 3. 스크린샷을 `step_archive/screenshots/design/` 에 저장
 
 ## 검증 절차 (각 뷰포트 × 페이지 조합마다 반복)
 
 ### 1단계: 스크린샷 촬영
 
-Playwright 스크립트 실행 → 스크린샷을 `step_archive/screenshots/design/` 에 저장
+브라우저 자동화 절차 실행 → 스크린샷을 `step_archive/screenshots/design/` 에 저장
 
 ### 2단계: 에이전트 B의 역할 (검증)
 

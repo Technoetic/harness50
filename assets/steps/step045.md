@@ -22,8 +22,8 @@ persistence: session
 
 E2E 시작 전 아래를 확인하고, 미비하면 사용자에게 묻지 않고 즉시 조치한다.
 
-1. Playwright 브라우저: `npx.cmd playwright install --check chromium` — 실패 시 `npx.cmd playwright install chromium` (최대 3회)
-2. `playwright.config.js` 존재 — 없으면 프로젝트 구조에 맞게 직접 생성한다
+1. 브라우저 검증 백엔드: 플러그인 체크아웃에서 `node scripts/verify-output.mjs --probe` — selected가 null이면 docs/BROWSER-TOOLS.md에 따라 백엔드를 준비한다 (최대 3회)
+2. 프로젝트가 선언한 E2E 러너(`npm run e2e`)와 그 설정 파일 존재 — 없으면 프로젝트 구조에 맞게 직접 생성한다. 러너 구현은 검사하지 않는다
 3. `dist/index.html` 존재 — 없으면 `npm.cmd run build`를 먼저 실행한다
 4. 별도 테스트 파일 매핑 단계가 없으므로, E2E 테스트 스펙은 이 단계에서 직접 작성한다
 
@@ -36,7 +36,7 @@ E2E 시작 전 아래를 확인하고, 미비하면 사용자에게 묻지 않�
 
 프로젝트 특성을 분석하여 테스트 범위와 검증 항목을 동적으로 결정한다.
 
-Playwright를 사용하여 E2E 테스트를 수행한다.
+프로젝트가 선언한 E2E 러너(`npm run e2e`)를 사용하여 E2E 테스트를 수행한다. 브라우저 검증은 docs/BROWSER-TOOLS.md의 가용 백엔드(Aside CLI 또는 Playwright)로 수행한다.
 
 단일 HTML 웹앱은 플러그인 `docs/ROUTING.md`의 모든 선언 경로를 검사한다. desktop과
 mobile에서 각 URL 직접 접속·새로고침, 실제 링크 이동, 뒤로/앞으로 가기와 알 수 없는
@@ -69,7 +69,7 @@ history 모드는 로컬 HTTP 서버의 fallback 설정과 직접 접속·새로
 **E2E 테스트 단계에서 절대로 superpowers:brainstorming을 사용하지 않는다.**
 
 **검증:**
-- `npx playwright test` 실행 결과 전체 PASS로 직접 검증 (구 e2e-validator.ps1은 retired — 2026-06-10 M07 정정)
+- 프로젝트가 선언한 E2E 스크립트(`npm run e2e`) 실행 결과 전체 PASS로 직접 검증 (구 e2e-validator.ps1은 retired — 2026-06-10 M07 정정)
 
 **검증 실패 시:**
 - 실패한 테스트 케이스 분석

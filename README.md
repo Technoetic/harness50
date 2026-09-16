@@ -110,7 +110,7 @@ Skill discovery alone does not prove that the current host delivers continuation
 
 Windows PowerShell 원본 훅 실행, 프로젝트별 중단 상태, Codex 하위 에이전트 분리와 중단된 잠금 복구를 회귀 검사합니다. 두 호스트 모두 Node.js 22 이상이 필요합니다.
 
-Trust5는 폴더 존재에 점수를 주지 않습니다. 실제 테스트·린트·타입·보안 명령의 종료 코드와 85% 이상 커버리지를 확인하며, 없거나 오래된 증거는 미완료로 표시합니다. 최종 HTML은 Chromium의 데스크톱·모바일 화면에서 오류, 접근성, 가로 넘침을 검사합니다. 설정과 실행 명령은 [품질 검증 안내](docs/QUALITY.md)를 참고하세요.
+Trust5는 폴더 존재에 점수를 주지 않습니다. 실제 테스트·린트·타입·보안 명령의 종료 코드와 85% 이상 커버리지를 확인하며, 없거나 오래된 증거는 미완료로 표시합니다. 최종 HTML은 Chromium 계열 브라우저의 데스크톱·모바일 화면에서 오류, 접근성, 가로 넘침을 검사합니다. 브라우저 백엔드는 두 가지입니다 — `browser-verifier/`에 격리된 Playwright(CI·허용 PC) 또는 Aside CLI(Playwright가 금지된 PC). `node scripts/verify-output.mjs --probe`로 가용 백엔드를 확인하고 `--backend auto|playwright|aside`로 선택합니다([브라우저 도구 안내](docs/BROWSER-TOOLS.md)). 설정과 실행 명령은 [품질 검증 안내](docs/QUALITY.md)를 참고하세요.
 
 자동 검사는 학습 효과나 디자인 완성도 점수를 대신하지 않습니다. 실제 생성물의 평가는 별도 주제별 실행과 사용자 검증이 필요합니다.
 
@@ -127,7 +127,7 @@ v2.4.0은 Claude·Codex의 제품 QA에 [실패·검증 인계 보고서](docs/Q
                         ↓
    webapp-trigger.hook  TOPIC.md 자동 작성 + step001~050 부트스트랩
                         ↓
-   step001.md  ───────►  prefill 도구 검증 (Node, npx, Playwright, Biome, …)
+   step001.md  ───────►  prefill 도구 검증 (Node, npx, 브라우저 백엔드, Biome, …)
    step002.md  ───────►  컨텍스트 전략 청크 작성
    step016.md  ───────►  웹 조사 병렬 서브에이전트 (haiku × 10)
    step025.md  ───────►  4단계 카드 스토리보드 기획
@@ -135,7 +135,7 @@ v2.4.0은 Claude·Codex의 제품 QA에 [실패·검증 인계 보고서](docs/Q
    step037.md  ───────►  단일 HTML 인터랙티브 튜토리얼 구현
    step038.md  ───────►  빌드 스모크 게이트 + TRUST 5 r1 (50점 만점)
    step044.md  ───────►  클라이언트 사이드 라우팅 + TRUST 5 r2
-   step045.md  ───────►  E2E 테스트 (프리플라이트 흡수)
+   step045.md  ───────►  E2E 테스트 (프로젝트의 npm run e2e, 프리플라이트 흡수)
    step050.md  ───────►  콘솔 에러 0 + 최종 build 게이트 + TRUST 5 r3
                         ↓
    Stop hook  ────►  진행 미완료면  {"decision":"block"}  →  자동 재개
@@ -532,9 +532,21 @@ claude --plugin-dir ./path/to/harness50
 ### 프로젝트 의존성 (1회)
 
 ```bash
-npm i -D @biomejs/biome stylelint vitest playwright @axe-core/playwright c8 jscpd madge
-npx playwright install chromium
+npm i -D @biomejs/biome stylelint vitest axe-core c8 jscpd madge
 ```
+
+브라우저 백엔드는 둘 중 하나를 설치한다([docs/BROWSER-TOOLS.md](docs/BROWSER-TOOLS.md)):
+
+```bash
+# Playwright — browser-verifier/에 격리 (CI, Playwright가 허용된 PC)
+cd browser-verifier && npm ci && npx playwright install chromium
+
+# Aside CLI — Playwright가 금지된 PC (Aside 앱 실행 + 로그인 상태)
+aside --version
+node scripts/verify-output.mjs --probe
+```
+
+step045 E2E는 프로젝트의 `npm run e2e`를 실행한다 — 러너(Playwright test, Aside `repl` 스크립트 등)는 프로젝트가 정하고, step은 결과 전체 PASS만 본다.
 
 선택: `semgrep` (Trust5 Secured 축에서 9점/4점 분기).
 

@@ -11,7 +11,7 @@ phase: e2e
 ## 목표
 
 현재 build를 실제 사용자 흐름으로 검증한다. 주제와 설계에서 동적으로 시나리오를
-도출하고, 프로젝트에 이미 설치된 Playwright와 선언된 E2E script만 사용해 전체
+도출하고, 프로젝트가 선언한 E2E 러너(`npm run e2e`)와 선언된 E2E script만 사용해 전체
 suite가 재현 가능하게 통과하는지 독립적으로 확인한다.
 
 ## 입력과 산출물
@@ -41,10 +41,11 @@ suite가 재현 가능하게 통과하는지 독립적으로 확인한다.
 
 ## 사전 준비와 시나리오 설계
 
-project manifest와 lockfile을 확인해 로컬 Playwright dependency, 선언된 E2E script,
-기존 Playwright configuration과 browser readiness를 먼저 검증한다. implicit package
-download을 금지하며, 프로젝트 밖 package나 임시 최신 버전을 가져오지 않는다. 기존
-Playwright configuration은 보존하고 필요한 test만 현재 ownership에 맞춰 추가한다.
+project manifest와 lockfile을 확인해 프로젝트가 선언한 E2E 러너 dependency, 선언된 E2E
+script, 기존 러너 configuration과 browser readiness를 먼저 검증한다. 러너 구현(어떤 브라우저
+자동화 도구인지)은 검사하지 않는다. implicit package download을 금지하며, 프로젝트 밖
+package나 임시 최신 버전을 가져오지 않는다. 기존 러너 configuration은 보존하고 필요한
+test만 현재 ownership에 맞춰 추가한다.
 
 로컬 dependency가 없으면 필수 입력이 누락된 것으로 차단한다. dependency는 있지만
 browser binary가 없으면 로컬 package가 제공하는 installer만 최대 3회 정상 권한 흐름으로
@@ -100,7 +101,7 @@ browser readiness 시도, exact E2E command, 전체 suite 결과, 각 라운드�
 
 - `e2e-test-report`: project-specific scenario와 전체 suite 증거가 기록됐다.
 - `project-e2e-command`: 선언된 exact local E2E script가 성공했다.
-- `local-playwright-only`: 로컬 Playwright만 사용했고 implicit download가 없었다.
+- `project-e2e-runner-only`: 프로젝트가 선언한 E2E 러너(`npm run e2e`)만 사용했고 그 구현은 검사하지 않았으며 implicit download가 없었다.
 - `bounded-browser-readiness`: browser 설치 시도가 정상 권한으로 최대 3회 이내였다.
 - `dynamic-scenario-coverage`: topic, design, build와 user flow가 시나리오에 반영됐다.
 - `edge-case-coverage`: project-specific edge case를 최소 2개 검증했다.

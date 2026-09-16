@@ -3,7 +3,7 @@ name: step046
 phase: e2e
 ---
 
-# Step 46 - Playwright 스크린샷 기반 상세 E2E 테스트
+# Step 46 - 스크린샷 기반 상세 E2E 테스트
 
 이전 버전에서 완료한 44단계의 보고서를 입력으로 읽을 때는
 `docs/STEP044-MIGRATION.md`의 입력 호환 절차를 따른다.
@@ -57,8 +57,8 @@ manifest에 고정한다. primary 조합은 최종 상태를
 
 ## 스크린샷 E2E와 시각 검증
 
-project manifest에 선언되어 acceptance pattern과 일치하는 정확한 E2E script를 로컬
-Playwright로 실행하고 exit code 0만 성공으로 인정한다. matrix의 모든 조합을 실행해
+project manifest에 선언되어 acceptance pattern과 일치하는 정확한 E2E script를 프로젝트가
+선언한 E2E 러너로 실행하고 exit code 0만 성공으로 인정한다. matrix의 모든 조합을 실행해
 최종 screenshot을 저장하며 primary 결과는
 `step_archive/screenshots/e2e/step046-primary.png`에 둔다. 독립 검증자는 matrix의
 모든 최종 screenshot을 실제로 열어 expected behavior, layout, content, responsive

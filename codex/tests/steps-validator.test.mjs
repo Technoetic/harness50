@@ -315,10 +315,10 @@ test("index records SHA-256 digests of the unmodified Claude source bytes", asyn
   const hashes = await recordSourceHashes(repoRoot, index.steps.slice(0, 5));
 
   assert.deepEqual(hashes, {
-    step001: "b486e78661376ed4baf2fb730ce35991a73ef7c2d2e910761f2ce563e092f0e7",
+    step001: "2aee375edd23d80a0e1f87d5276d4be59435abfb2f02d16598e47ebb2b93eec5",
     step002: "3138e7a161fe488b3c1777da7e72820d1c5d3faa992380f1cbd73a74103b3e89",
-    step003: "403cd2247bdde3081e1e07b4dbb066760365a175847c782fb169f170151ab929",
-    step004: "a262f19f844065a166f179983ff4a6e8414c3b6e347265434bd0626939d9af10",
+    step003: "51c62866e875fe23c47617901bc18ad0c7887183a9b4d058a5392d08fd130af5",
+    step004: "5d40b076c3d1cae5e13a64ad16488f73d46c7beae6e2756b9a091544bbd4db1e",
     step005: "902d5a5ce9f8eaff9121b54ececc9206955c50326b7c86ad26965f9bd9d0339b"
   });
 });
@@ -334,7 +334,7 @@ test("preflight batch declares the exact Codex-native step contracts", async () 
       phase: "preflight",
       source: "assets/steps/step001.md",
       target: "codex/assets/steps/step001.md",
-      source_sha256: "b486e78661376ed4baf2fb730ce35991a73ef7c2d2e910761f2ce563e092f0e7",
+      source_sha256: "2aee375edd23d80a0e1f87d5276d4be59435abfb2f02d16598e47ebb2b93eec5",
       inputs: ["step_archive/TOPIC/TOPIC.md"],
       outputs: ["step_archive/step001_preflight.md"],
       requires: [],
@@ -430,11 +430,11 @@ test("preflight batch declares the exact Codex-native step contracts", async () 
     {
       number: 3,
       id: "step003",
-      title: "Playwright 환경 테스트",
+      title: "브라우저 자동화 환경 확인",
       phase: "preflight",
       source: "assets/steps/step003.md",
       target: "codex/assets/steps/step003.md",
-      source_sha256: "403cd2247bdde3081e1e07b4dbb066760365a175847c782fb169f170151ab929",
+      source_sha256: "51c62866e875fe23c47617901bc18ad0c7887183a9b4d058a5392d08fd130af5",
       inputs: ["step_archive/step001_preflight.md"],
       outputs: [
         "step_archive/step003_playwright_test.md",
@@ -446,24 +446,24 @@ test("preflight batch declares the exact Codex-native step contracts", async () 
       visual_review: false,
       acceptance: [
         {
-          id: "playwright-chromium-smoke",
+          id: "browser-backend-probe",
           kind: "command",
           required: true,
-          description: "Captures a Chromium smoke screenshot of a blank page.",
-          command: "npx playwright screenshot --browser chromium about:blank step_archive/screenshots/step003_playwright_smoke.png"
+          description: "Probes the validation checkout for an available browser backend (Playwright or Aside CLI) and succeeds only when one is selected.",
+          command: "node scripts/verify-output.mjs --probe"
         },
         {
-          id: "playwright-smoke-screenshot",
+          id: "browser-smoke-screenshot",
           kind: "artifact",
           required: true,
-          description: "Stores the Chromium smoke-test screenshot.",
+          description: "Stores the blank-page smoke screenshot captured by the selected backend.",
           path: "step_archive/screenshots/step003_playwright_smoke.png"
         },
         {
-          id: "playwright-environment-report",
+          id: "browser-environment-report",
           kind: "artifact",
           required: true,
-          description: "Records Playwright and Chromium availability plus the smoke-command outcome.",
+          description: "Records the probe result (backends, selected, tool_version) plus the smoke outcome.",
           path: "step_archive/step003_playwright_test.md"
         }
       ],
@@ -473,11 +473,11 @@ test("preflight batch declares the exact Codex-native step contracts", async () 
     {
       number: 4,
       id: "step004",
-      title: "@axe-core/playwright 환경 설치",
+      title: "접근성 검사(axe) 환경 확인",
       phase: "preflight",
       source: "assets/steps/step004.md",
       target: "codex/assets/steps/step004.md",
-      source_sha256: "a262f19f844065a166f179983ff4a6e8414c3b6e347265434bd0626939d9af10",
+      source_sha256: "5d40b076c3d1cae5e13a64ad16488f73d46c7beae6e2756b9a091544bbd4db1e",
       inputs: ["step_archive/step003_playwright_test.md"],
       outputs: ["step_archive/step004_axe_core_test.md"],
       requires: ["step003"],
@@ -489,8 +489,8 @@ test("preflight batch declares the exact Codex-native step contracts", async () 
           id: "axe-package-resolves",
           kind: "command",
           required: true,
-          description: "Confirms that the accessibility package resolves from the project.",
-          command: "node -e \"require.resolve('@axe-core/playwright')\""
+          description: "Confirms that the axe-core accessibility engine resolves from the validation checkout.",
+          command: "node -e \"require.resolve('axe-core')\""
         },
         {
           id: "axe-environment-report",
@@ -500,10 +500,10 @@ test("preflight batch declares the exact Codex-native step contracts", async () 
           path: "step_archive/step004_axe_core_test.md"
         },
         {
-          id: "axe-playwright-compatibility",
+          id: "axe-backend-compatibility",
           kind: "check",
           required: true,
-          description: "Confirms compatibility with the detected Playwright environment."
+          description: "Confirms compatibility with the selected browser verification backend."
         }
       ],
       ported: true,
@@ -1117,7 +1117,7 @@ test("research batch declares the exact Codex-native evidence contracts", async 
       phase: "research",
       source: "assets/steps/step016.md",
       target: "codex/assets/steps/step016.md",
-      source_sha256: "3c27c6e77a062a5ae9134d87bcb24d237a4d0d3aa315fc2f113111b20e2ad4bb",
+      source_sha256: "38ca9896b715a74779fadedffd53cdf2e085b3732b6aaaff94ec3e16d3a93234",
       inputs: [
         "step_archive/TOPIC/TOPIC.md",
         "step_archive/step001_preflight.md",
@@ -1295,7 +1295,7 @@ test("research batch declares the exact Codex-native evidence contracts", async 
       phase: "research",
       source: "assets/steps/step022.md",
       target: "codex/assets/steps/step022.md",
-      source_sha256: "d385a1cb3bd07e10d5dacf9fb47fc2a8c00399e4b8489228f75173e7558c2410",
+      source_sha256: "2d16baba92f09b0ab7811731517979c048434a3ab2f9a570c5e0ce7a690dd93c",
       inputs: [
         "step_archive/step020_선정URL.md",
         "step_archive/research-raw-step020-awwwards.txt"
@@ -1392,13 +1392,13 @@ test("research source hashes bind the untouched Claude steps 016 through 024", a
   const hashes = await recordSourceHashes(repoRoot, index.steps.slice(15, 24));
 
   assert.deepEqual(hashes, {
-    step016: "3c27c6e77a062a5ae9134d87bcb24d237a4d0d3aa315fc2f113111b20e2ad4bb",
+    step016: "38ca9896b715a74779fadedffd53cdf2e085b3732b6aaaff94ec3e16d3a93234",
     step017: "941288a9368915036af4f69ddac2ef1a605b8dd6181c277314f38c1b489f3fe9",
     step018: "d9f419671463c41d66e4261352d56743a053b13436f82ca9966697b118650014",
     step019: "d34370dc09411a8724906cc17965188f6d9f179a69b0997b0b036ccbfe9225c0",
     step020: "eb729885309aaa07e489bc2a1a2987606161fba43e3b6a996a552e15298d425b",
     step021: "c36004a40bd93ed6bc79043cd7120629f2f71e6582feb89ca3e3a6d20cc7da54",
-    step022: "d385a1cb3bd07e10d5dacf9fb47fc2a8c00399e4b8489228f75173e7558c2410",
+    step022: "2d16baba92f09b0ab7811731517979c048434a3ab2f9a570c5e0ce7a690dd93c",
     step023: "6efdd52549990ea26e16968a6da65c576edcf46e5e914f8a6708292c81b8c461",
     step024: "2150999166c77e0ab4cc3d19ca3f5c49d4646d19523638c635fc1547e89ca94a"
   });
@@ -2239,8 +2239,8 @@ test("preflight documents bind exact frontmatter and titles to only their curren
   const expected = [
     { name: "step001", phase: "preflight", number: 1, title: "하네스 프리플라이트 체크" },
     { name: "step002", phase: "preflight", number: 2, title: "프로젝트 분석 및 Context 전략 수립" },
-    { name: "step003", phase: "preflight", number: 3, title: "Playwright 환경 테스트" },
-    { name: "step004", phase: "preflight", number: 4, title: "@axe-core/playwright 환경 설치" },
+    { name: "step003", phase: "preflight", number: 3, title: "브라우저 자동화 환경 확인" },
+    { name: "step004", phase: "preflight", number: 4, title: "접근성 검사(axe) 환경 확인" },
     { name: "step005", phase: "preflight", number: 5, title: "c8 코드 커버리지 환경 설치" }
   ];
 
@@ -3423,7 +3423,7 @@ const EXPECTED_REVIEW_ROWS = [
     phase: "review",
     source: "assets/steps/step039.md",
     target: "codex/assets/steps/step039.md",
-    source_sha256: "b358ba3251da565f3e80db67de46f2664ee786690c48bfda7735dfebb410c209",
+    source_sha256: "3826f6f36f9f733407327335ea13d71f0e30f2ffa392ed18d5212440cd03dca9",
     inputs: [
       "step_archive/step030_레이아웃설계_chunk1.md",
       "step_archive/step030_전체설계_chunk1.md",
@@ -3463,7 +3463,7 @@ const EXPECTED_REVIEW_ROWS = [
     phase: "review",
     source: "assets/steps/step040.md",
     target: "codex/assets/steps/step040.md",
-    source_sha256: "aa8df1be9b10bc353155236fbb309cf55703a6508d7cbf68b0abf32da28509b8",
+    source_sha256: "b95e68b9b3d412184127288c10af0cb82d74ca66c745152498cf3d0a3ae0e0a3",
     inputs: [
       "step_archive/step022_수집결과_chunk1.md",
       "step_archive/awwwards-step022-primary.txt",
@@ -3570,7 +3570,7 @@ const EXPECTED_REVIEW_ROWS = [
     phase: "review",
     source: "assets/steps/step043.md",
     target: "codex/assets/steps/step043.md",
-    source_sha256: "620c977e80e36664ef3170fd2b5235cf75058f111ee0fb274dcf3c8d267d1349",
+    source_sha256: "6b4db388b8176cdbef2bddc462e3a6547c7f69aec6597a1eb8286d8427748173",
     inputs: [
       "step_archive/step022_수집결과_chunk1.md",
       "step_archive/awwwards-step022-primary.txt",
@@ -3668,11 +3668,11 @@ test("review source hashes bind reviewed source steps 039 through 044", async ()
   const hashes = await recordSourceHashes(repoRoot, index.steps.slice(38, 44));
 
   assert.deepEqual(hashes, {
-    step039: "b358ba3251da565f3e80db67de46f2664ee786690c48bfda7735dfebb410c209",
-    step040: "aa8df1be9b10bc353155236fbb309cf55703a6508d7cbf68b0abf32da28509b8",
+    step039: "3826f6f36f9f733407327335ea13d71f0e30f2ffa392ed18d5212440cd03dca9",
+    step040: "b95e68b9b3d412184127288c10af0cb82d74ca66c745152498cf3d0a3ae0e0a3",
     step041: "d3bd6bc9850aa09868a3925349fd826a898230a5200e1a384f14d058921b883c",
     step042: "de60366a82b20ca40f7d8fa0fb43df0194d723039155f0ee6714df1fdff83e16",
-    step043: "620c977e80e36664ef3170fd2b5235cf75058f111ee0fb274dcf3c8d267d1349",
+    step043: "6b4db388b8176cdbef2bddc462e3a6547c7f69aec6597a1eb8286d8427748173",
     step044: "bad68534ce5d04e52a1b4ff933f15fcb5dcaa6a03958f695810b044682489f35"
   });
 });
@@ -4106,7 +4106,7 @@ const EXPECTED_E2E_ACCEPTANCE_DESCRIPTIONS = {
   step045: {
     "e2e-test-report": "Stores the project-specific scenarios, edge cases, exact E2E command, attempts, and final independent verdict.",
     "project-e2e-command": "Runs the exact non-optional local project E2E script without implicit package download.",
-    "local-playwright-only": "Confirms only the project-installed Playwright package and preserved project configuration are used.",
+    "project-e2e-runner-only": "Confirms only the project-declared E2E runner (`npm run e2e`) and preserved project configuration are used; the runner implementation is not inspected.",
     "bounded-browser-readiness": "Limits a missing browser installation to three normal-permission attempts and blocks if readiness is unavailable.",
     "dynamic-scenario-coverage": "Confirms scenarios derive from the topic, design, built application, and implemented user flows.",
     "edge-case-coverage": "Confirms at least two project-specific edge cases are exercised.",
@@ -4240,7 +4240,7 @@ const EXPECTED_E2E_ROWS = [
     phase: "e2e",
     source: "assets/steps/step045.md",
     target: "codex/assets/steps/step045.md",
-    source_sha256: "8089e3d3f2d5efdedf229e3a81c68515e091219f81d83d965939b7b05a3bb414",
+    source_sha256: "9d47118c554a0ae166e0042ee5d9782a1bec4013d29cde2c82ed5dfcd2a0d0e3",
     inputs: [
       "step_archive/TOPIC/TOPIC.md",
       "step_archive/step001_preflight.md",
@@ -4260,7 +4260,7 @@ const EXPECTED_E2E_ROWS = [
     acceptance: [
       { id: "e2e-test-report", kind: "artifact", required: true, path: "step_archive/step045_e2e테스트결과.md" },
       { id: "project-e2e-command", kind: "command", required: true, command_pattern: E2E_COMMAND_PATTERN },
-      { id: "local-playwright-only", kind: "check", required: true },
+      { id: "project-e2e-runner-only", kind: "check", required: true },
       { id: "bounded-browser-readiness", kind: "check", required: true },
       { id: "dynamic-scenario-coverage", kind: "check", required: true },
       { id: "edge-case-coverage", kind: "check", required: true },
@@ -4273,11 +4273,11 @@ const EXPECTED_E2E_ROWS = [
   {
     number: 46,
     id: "step046",
-    title: "Playwright 스크린샷 기반 상세 E2E 테스트",
+    title: "스크린샷 기반 상세 E2E 테스트",
     phase: "e2e",
     source: "assets/steps/step046.md",
     target: "codex/assets/steps/step046.md",
-    source_sha256: "026f5677bbb5ad91e1349e649704cad970958dbb0c049b1f1172ee6555a7410a",
+    source_sha256: "c290f0b81e68da011996abaa3a6fb2dd753d5c7199b8f6acaab2b8b3f606d1d9",
     inputs: [
       "step_archive/step030_레이아웃설계_chunk1.md",
       "step_archive/step030_전체설계_chunk1.md",
@@ -4315,7 +4315,7 @@ const EXPECTED_E2E_ROWS = [
     phase: "e2e",
     source: "assets/steps/step047.md",
     target: "codex/assets/steps/step047.md",
-    source_sha256: "272e528db45d7fd051fec4daf6ffd37ee08d714e9b5b603df6339bb953060572",
+    source_sha256: "e35c1b210e06b1cb4742573941a789e166aa4a131a2cc012481b3747ffdc04be",
     inputs: [
       "step_archive/step030_레이아웃설계_chunk1.md",
       "step_archive/step038_smoke_test.md",
@@ -4355,7 +4355,7 @@ const EXPECTED_E2E_ROWS = [
     phase: "e2e",
     source: "assets/steps/step048.md",
     target: "codex/assets/steps/step048.md",
-    source_sha256: "720a4b0226434dfa26020469722b434e2ab63c3d620a32dc2b0d732537d7a1a5",
+    source_sha256: "b171cb98e9ca33de2e7ff5f58f721dd1590c5df213b8598268726125176982d0",
     inputs: [
       "step_archive/step030_레이아웃설계_chunk1.md",
       "step_archive/step038_smoke_test.md",
@@ -4394,11 +4394,11 @@ const EXPECTED_E2E_ROWS = [
   {
     number: 49,
     id: "step049",
-    title: "Playwright 디자인 시각 검증 (독립 검증 루프)",
+    title: "디자인 시각 검증 (독립 검증 루프)",
     phase: "e2e",
     source: "assets/steps/step049.md",
     target: "codex/assets/steps/step049.md",
-    source_sha256: "c49b30ec59d0550ca3e3352b3aebbb597afc6c1e698bdaf3e992b7765a152a43",
+    source_sha256: "e016d22df3d82ecbb7c8f7609ceb3911fb0653f23bd71a4f9dd28fc6224c18f5",
     inputs: [
       "step_archive/step030_레이아웃설계_chunk1.md",
       "step_archive/step030_전체설계_chunk1.md",
@@ -4440,7 +4440,7 @@ const EXPECTED_E2E_ROWS = [
     phase: "e2e",
     source: "assets/steps/step050.md",
     target: "codex/assets/steps/step050.md",
-    source_sha256: "9da2606a4432154c076f073c707961487ed7990544310d8e91c9f38d1fbd3807",
+    source_sha256: "f0efe75ebf5fd255749a5b4440e6e276a5744e55df8d97cb8df17160ad49efd0",
     inputs: [
       "step_archive/step038_smoke_test.md",
       "dist/index.html",
@@ -4510,12 +4510,12 @@ test("e2e source hashes bind reviewed source steps 045 through 050", async () =>
   const index = await loadIndex(repoRoot);
   const hashes = await recordSourceHashes(repoRoot, index.steps.slice(44, 50));
   assert.deepEqual(hashes, {
-    step045: "8089e3d3f2d5efdedf229e3a81c68515e091219f81d83d965939b7b05a3bb414",
-    step046: "026f5677bbb5ad91e1349e649704cad970958dbb0c049b1f1172ee6555a7410a",
-    step047: "272e528db45d7fd051fec4daf6ffd37ee08d714e9b5b603df6339bb953060572",
-    step048: "720a4b0226434dfa26020469722b434e2ab63c3d620a32dc2b0d732537d7a1a5",
-    step049: "c49b30ec59d0550ca3e3352b3aebbb597afc6c1e698bdaf3e992b7765a152a43",
-    step050: "9da2606a4432154c076f073c707961487ed7990544310d8e91c9f38d1fbd3807"
+    step045: "9d47118c554a0ae166e0042ee5d9782a1bec4013d29cde2c82ed5dfcd2a0d0e3",
+    step046: "c290f0b81e68da011996abaa3a6fb2dd753d5c7199b8f6acaab2b8b3f606d1d9",
+    step047: "e35c1b210e06b1cb4742573941a789e166aa4a131a2cc012481b3747ffdc04be",
+    step048: "b171cb98e9ca33de2e7ff5f58f721dd1590c5df213b8598268726125176982d0",
+    step049: "e016d22df3d82ecbb7c8f7609ceb3911fb0653f23bd71a4f9dd28fc6224c18f5",
+    step050: "f0efe75ebf5fd255749a5b4440e6e276a5744e55df8d97cb8df17160ad49efd0"
   });
 });
 
@@ -4529,11 +4529,11 @@ test("e2e acceptance descriptions reject placeholder-wide mutation", async () =>
 });
 
 const EXPECTED_E2E_TARGET_SHA256 = Object.freeze({
-  step045: "eb37f931ff0670a67ff85a0d94a7370797f7cac6afc46841eef8d4d09579af85",
-  step046: "2c0245ee110dc59cc12e55a89bbebb461d6c33866277d2f5b61629f6455a8ddd",
+  step045: "8706bffc859eee7e68398c581c2b51077b23a445007b756affc8ef7f552417b2",
+  step046: "187a619f02da34101426d23f466182758b7d0b6bc0977ab3518c8c6bb2bfd93d",
   step047: "d2ed158f4fb15f52e21d76438776bbe0b1e5a0124a46eb4e7bd511c31398dfde",
   step048: "d858de0ea976dbce2a85c62ec71722964d2615528c2235fdf8e877b1d2a1558b",
-  step049: "5f84740313199fb1b2de9eaf6fa956642b7b25f701a599b7f5ce7515dc7046ac",
+  step049: "579b418539ce598bf872ab62121b8a883998fe3d2f47591adb57f3c7fd325d6a",
   step050: "c803957f478a2159bc4f836cc3edc7b561a04fb90c5f3ab4edd16287863a2b60"
 });
 
@@ -4581,10 +4581,10 @@ function assertStep45Contract(content) {
   ]);
   const readiness = sections["사전 준비와 시나리오 설계"].replace(/\s+/g, " ");
   const execution = sections["전체 E2E 실행과 독립 검증"].replace(/\s+/g, " ");
-  assert.match(readiness, /project manifest[^]*lockfile[^]*로컬 Playwright/i);
+  assert.match(readiness, /project manifest[^]*lockfile[^]*선언한 E2E 러너/i);
   assert.match(readiness, /browser[^]*없으면[^]*최대 3회[^]*정상 권한[^]*설치 시도/i);
   assert.match(readiness, /implicit package download[^]*금지/i);
-  assert.match(readiness, /기존 Playwright configuration[^]*보존/i);
+  assert.match(readiness, /기존 러너 configuration[^]*보존/i);
   assert.match(readiness, /topic[^]*design[^]*built application[^]*user flow/i);
   assert.match(readiness, /project-specific edge case[^]*최소 2개/i);
   assert.doesNotMatch(readiness, /npx(?:\.cmd)?(?:\s+--yes)?/i);

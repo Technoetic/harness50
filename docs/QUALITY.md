@@ -36,17 +36,33 @@ Claude Stop hooks inspect saved evidence at steps 38, 44 and 50 and write `trust
 
 ## Final browser output
 
-Install the optional browser verifier in a separate checkout, outside the plugin cache:
+A passing schema-v3 browser report is required for fresh completion; which browser
+backend produces it is free. Install one of the two [browser backends](BROWSER-TOOLS.md)
+in a separate checkout, outside the plugin cache:
 
 ```text
 git clone https://github.com/Technoetic/harness50.git
 cd harness50
-npm ci
-npx playwright install chromium
-node scripts/verify-output.mjs --workspace "<project-root>"
+
+# Backend 1 — Playwright (CI, machines that allow it), isolated in browser-verifier/
+cd browser-verifier && npm ci && npx playwright install chromium && cd ..
+
+# Backend 2 — Aside CLI (machines without Playwright); the Aside app must be running
+aside --version
+
+node scripts/verify-output.mjs --probe
+node scripts/verify-output.mjs --workspace "<project-root>" --backend auto
 ```
 
-No hook installs browser packages. The verifier loads the exact `dist/index.html` bytes in fresh Chromium contexts at 1440×900 and 390×844. It blocks network dependencies and WebSockets, reports JavaScript/console errors, detects horizontal overflow, checks initial keyboard focus and runs axe WCAG A/AA checks. It records measured load timing without converting it to a Lighthouse score. The single-file output must include required styles, scripts and assets.
+`--probe` prints which backends are available and which one `auto` would select,
+without launching a browser. `--backend playwright|aside` (or the environment
+variable `HARNESS50_BROWSER_BACKEND`) forces one; `auto` prefers Playwright and falls
+back to Aside. No hook installs browser packages. The verifier loads the exact
+`dist/index.html` bytes at 1440×900 and 390×844. It blocks network dependencies and
+WebSockets, reports JavaScript/console errors, detects horizontal overflow, checks
+initial keyboard focus and runs axe WCAG A/AA checks. It records measured load timing
+without converting it to a Lighthouse score. The single-file output must include
+required styles, scripts and assets.
 
 The HTML must also contain the [screen routing contract](ROUTING.md). Every independent
 screen has a stable URL, with hash routing as the portable default. The verifier
@@ -54,8 +70,14 @@ checks each declared route at both viewport sizes, including direct entry, reloa
 real link navigation, Back/Forward, URL-to-screen agreement and unknown-route fallback.
 It repeats the complete checks with the Navigation API forcibly removed before
 application startup, so an application that only works with the new API fails.
-Use `--executable-path "<browser-path>"` to select an installed Brave browser; each
-run uses fresh temporary browser contexts, never the user's persistent profile.
+With the Playwright backend, `--executable-path "<browser-path>"` selects an installed
+Chromium-based browser and each run uses fresh temporary browser contexts, never the
+user's persistent profile. The Aside backend runs inside the user's own Aside Browser
+(shared profile, visible tabs, no headless mode) and reproduces the same checks through
+measured workarounds — iframe mobile viewport, server-injected init script, CSP-based
+request blocking, per-chunk origins; its report discloses that in the `environment`
+block (`backend`, `isolation`, `color_scheme`, `language`, `dpr`, `tool_version`, …),
+so a reviewer can tell shared-profile evidence from fresh-context evidence.
 
 The schema-v3 JSON report is `step_archive/outputs/browser-output.json`, bound to the
 HTML SHA-256 and its exact embedded route inventory. Entry screenshots are
@@ -71,7 +93,8 @@ use when supported. Failures return exit code 1. Review axe
 mouse and visual review for states beyond the finite route inventory. History-mode
 fallback inside the verifier does not establish that a deployment server has rewrites.
 
-Fresh completion requires version 3 evidence with both scenarios. Both hosts also
+Fresh completion requires version 3 evidence with both scenarios, from either backend
+(the gate reads named report fields only and ignores `environment`). Both hosts also
 require a current [final regression report](QA-REPORTS.md#final-candidate-regression-at-step-50)
 covering E2E, screenshots, keyboard, mouse, design and console on the same final HTML.
 Run these complete matrices after the last repair and build. Any subsequent
@@ -98,4 +121,4 @@ unexecuted required checks remain incomplete even when a retry limit is reached.
 
 ## Release verification and product evaluation
 
-`npm test` covers adapter/state/security contracts. `npm run test:browser` checks working and deliberately broken HTML fixtures in a real browser. Rating real generated tutorials also requires multiple topics, repeated full runs, cost/latency records and user evaluation. This release does not fabricate those results.
+`npm test` covers adapter/state/security contracts. `npm run test:browser` checks working and deliberately broken HTML fixtures in a real browser, always through the Playwright backend from `browser-verifier/` (the suite pins `backend: 'playwright'`; Aside runs are exercised manually with `node scripts/verify-output.mjs --backend aside`). Rating real generated tutorials also requires multiple topics, repeated full runs, cost/latency records and user evaluation. This release does not fabricate those results.

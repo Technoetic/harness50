@@ -1,13 +1,17 @@
 {
   "name": "harness50-validation",
-  "version": "2.4.3",
+  "version": "2.5.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "test": "node --test codex/tests/*.test.mjs",
-    "test:browser": "node --test tests/browser-output.test.mjs tests/navigation-api.test.mjs",
+    "test:browser": "npm --prefix browser-verifier test",
     "verify:output": "node scripts/verify-output.mjs"
   },
-  "devDependencies": { "@axe-core/playwright": "4.13.0", "playwright": "1.63.0" }
+  "devDependencies": {
+    "axe-core": "4.13.0"
+  }
 }

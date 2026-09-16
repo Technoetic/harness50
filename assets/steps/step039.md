@@ -45,8 +45,8 @@ Step 37에서 구현된 레이아웃이 설계대로 구현되었는지 **작성
 
 ### 1단계: 구현 스크린샷 촬영
 
-Playwright로 현재 구현의 스크린샷을 뷰포트별로 촬영한다:
-- 데스크톱 (1920×1080): `step_archive/screenshots/layout-verify-desktop-r1.png`
+브라우저 자동화 도구(docs/BROWSER-TOOLS.md 절차표)로 현재 구현의 스크린샷을 뷰포트별로 촬영한다:
+- 데스크톱 (1920×1080): `step_archive/screenshots/layout-verify-desktop-r1.png` (Aside 백엔드는 탭 고정 1440×900 — 실제 캡처 크기를 기록)
 - 태블릿 (768×1024): `step_archive/screenshots/layout-verify-tablet-r1.png`
 - 모바일 (390×844): `step_archive/screenshots/layout-verify-mobile-r1.png`
 
@@ -122,7 +122,7 @@ Playwright로 현재 구현의 스크린샷을 뷰포트별로 촬영한다:
 
 ### 5단계: 재촬영 → 2단계로 돌아가기
 
-수정 후 Playwright로 스크린샷을 재촬영하고 (N = 다음 라운드), 2단계(에이전트 B 검증)부터 반복한다.
+수정 후 브라우저 자동화 도구로 스크린샷을 재촬영하고 (N = 다음 라운드), 2단계(에이전트 B 검증)부터 반복한다.
 
 ### 반복 제한: 최대 5라운드
 

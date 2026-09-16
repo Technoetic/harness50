@@ -65,7 +65,7 @@ Step 39 레이아웃 검증 통과 후, **조사 단계에서 촬영한 참고 �
 ### 2단계: 구현 스크린샷 촬영
 
 1. 개발 서버를 실행한다.
-2. Playwright로 주요 뷰포트별(데스크톱, 태블릿, 모바일) 스크린샷을 촬영한다.
+2. 브라우저 자동화 도구(docs/BROWSER-TOOLS.md 절차표)로 주요 뷰포트별(데스크톱, 태블릿, 모바일) 스크린샷을 촬영한다 (Aside 백엔드는 탭 고정 1440×900 — 실제 캡처 크기를 기록).
 3. `step_archive/screenshots/compare-impl-desktop.png`, `compare-impl-tablet.png`, `compare-impl-mobile.png` 로 저장한다.
 
 ### 3단계: 비교 검증 루프

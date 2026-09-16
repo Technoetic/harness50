@@ -5,9 +5,9 @@ import { createServer } from 'node:http';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright';
-import { makeWorkspace } from '../codex/tests/helpers/workspace.mjs';
+import { makeWorkspace } from '../../codex/tests/helpers/workspace.mjs';
 
-const example = await readFile(new URL('../examples/routed-single-file.html', import.meta.url), 'utf8');
+const example = await readFile(new URL('../../examples/routed-single-file.html', import.meta.url), 'utf8');
 let browser;
 before(async () => {
   browser = await chromium.launch({ headless: true, ...(process.env.HARNESS50_BROWSER_PATH ? { executablePath: process.env.HARNESS50_BROWSER_PATH } : {}) });

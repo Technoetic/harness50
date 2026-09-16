@@ -18,7 +18,7 @@ persistence: session
 >
 > **위치**: E2E 검증 구간 (최종 게이트 step050)
 
-Playwright headless CLI로 앱의 모든 도달 가능한 상태를 탐색하며 브라우저 에러를 수집하고, 발견된 모든 에러를 해결한다.
+브라우저 검증 백엔드(docs/BROWSER-TOOLS.md: Aside CLI 또는 Playwright; 헤드리스 여부는 백엔드에 따름 — Aside는 사용자의 보이는 브라우저·공유 프로필에서 실행되며 보고서 environment.isolation에 기록된다)로 앱의 모든 도달 가능한 상태를 탐색하며 브라우저 에러를 수집하고, 발견된 모든 에러를 해결한다.
 에러가 0개가 될 때까지 수정과 재검증을 반복한다.
 
 **이 단계에서 절대로 superpowers:brainstorming을 사용하지 않는다.**
@@ -36,9 +36,9 @@ Playwright headless CLI로 앱의 모든 도달 가능한 상태를 탐색하며
 
 ## 수집 대상
 
-Playwright의 page 객체가 발생시키는 **모든 이벤트**를 수집한다.
+브라우저 페이지가 드러내는 **모든 오류 표면**(console.error, window error, unhandledrejection, 요청 실패/차단, 크래시)을 수집한다. 수집 방법은 백엔드별로 docs/BROWSER-TOOLS.md 절차표('Console and page errors' 행)를 따른다 — Aside는 page.on 이벤트가 오지 않으므로 주입 브리지가 `document.documentElement.dataset`에 기록한 값을 evaluate로 읽는다.
 
-어떤 이벤트를 수집할지 사전에 결정하지 않는다. 실행 시점에 Playwright 문서 및 프로젝트 특성을 보고 판단한다.
+어떤 이벤트를 수집할지 사전에 결정하지 않는다. 실행 시점에 선택한 백엔드의 문서(docs/BROWSER-TOOLS.md) 및 프로젝트 특성을 보고 판단한다.
 
 **판정 기준만 명시한다:**
 - 에러성 이벤트 → **FAIL 판정 대상**
@@ -67,7 +67,7 @@ Playwright의 page 객체가 발생시키는 **모든 이벤트**를 수집한�
 ### 1단계: 에이전트 B — 에러 수집 및 판정
 
 1. 앱 서빙 방식은 프로젝트에 맞게 결정한다
-2. 수집 대상과 수집 범위에 따라 Playwright 스크립트를 프로젝트에 맞게 작성한다
+2. 수집 대상과 수집 범위에 따라 브라우저 자동화 절차를 프로젝트에 맞게 작성한다
 3. 모든 도달 가능한 상태를 탐색하며 에러를 수집한다
 4. 수집된 에러를 프로젝트 맥락에 맞게 분류하고 보고한다. 보고 형식과 항목은 에이전트 B가 판단한다
 5. 판정:

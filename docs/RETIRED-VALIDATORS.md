@@ -14,9 +14,10 @@ harness50의 일부 step 본문은 아래 `*-validator.ps1` / `*-checker.ps1` �
   검증기를 건너뛰고 다음 단계로 진행한다. 자율주행이 이로 인해 멈추지 않는다.
 - 실제 품질 검증이 필요하면 사용자가 대응 **CLI를 수동 실행**한다. 대부분 표준 도구다:
   - `tokei` (LOC), `c8` (커버리지), `@biomejs/biome` (lint/format), `stylelint`,
-    `semgrep` (보안), `playwright` + `@axe-core/playwright` (E2E/접근성),
+    `semgrep` (보안), 브라우저 백엔드 + `axe-core` (E2E/접근성 — [BROWSER-TOOLS.md](BROWSER-TOOLS.md)),
     `jscpd` (중복), `madge`/`knip` (데드코드/의존성), `@lhci/cli` (Lighthouse)
-- 이 목록은 `AGENTS.md`의 "프로젝트 의존성(1회)" 설치 명령과 일치한다.
+- 이 목록은 `AGENTS.md`의 "프로젝트 의존성(1회)" 설치 명령과 일치한다. 브라우저 도구는
+  Playwright(`browser-verifier/`) 또는 Aside CLI 중 PC가 허용하는 쪽을 쓴다.
 
 ## 참조되지만 미번들된 스크립트 (24종)
 
@@ -26,13 +27,13 @@ harness50의 일부 step 본문은 아래 `*-validator.ps1` / `*-checker.ps1` �
 | dependency-checker.ps1 | `madge` / `knip` | step031 |
 | research-chunk-validator.ps1 | (청크 500줄 규칙 — chunk-writer 스킬) | 조사 step 다수 |
 | research-validator.ps1 | (수동 검토) | 조사 step |
-| build-validator.ps1 | `html-bundler.ps1` + Playwright | step081 (본문에 retired 명시됨) |
+| build-validator.ps1 | `html-bundler.ps1` + 브라우저 백엔드(`verify-output.mjs`) | step081 (본문에 retired 명시됨) |
 | c8-validator.ps1 | `c8` | 디버깅 step |
 | biome-validator.ps1 / linting-validator.ps1 / formatting-validator.ps1 | `biome check` | 구현 step |
 | stylelint-validator.ps1 | `stylelint --fix` | CSS step |
 | semgrep-validator.ps1 | `semgrep --config=auto` | 보안 step |
-| playwright-validator.ps1 / e2e-validator.ps1 / ui-regression-validator.ps1 | `playwright test` | 검증 step |
-| accessibility-validator.ps1 / axe-core-validator.ps1 | `@axe-core/playwright` | 접근성 step |
+| playwright-validator.ps1 / e2e-validator.ps1 / ui-regression-validator.ps1 | 프로젝트의 `npm run e2e` (백엔드는 [BROWSER-TOOLS.md](BROWSER-TOOLS.md)) | 검증 step |
+| accessibility-validator.ps1 / axe-core-validator.ps1 | `axe-core` (브라우저 백엔드가 주입) | 접근성 step |
 | jscpd-validator.ps1 | `jscpd` | 중복 검사 step |
 | madge-validator.ps1 / knip-validator.ps1 / deadcode-validator.ps1 | `madge` / `knip` | 데드코드 step |
 | lhci-validator.ps1 / load-test-validator.ps1 | `@lhci/cli` | 성능 step |

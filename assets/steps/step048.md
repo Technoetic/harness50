@@ -18,7 +18,7 @@ persistence: session
 >
 > **위치**: E2E 검증 구간 (최종 게이트 step050)
 
-Playwright로 마우스 인터랙션을 직접 수행하며 스크린샷을 촬영하고, Claude가 스크린샷을 직접 Read하여 시각적으로 확인한다.
+브라우저 자동화 도구(docs/BROWSER-TOOLS.md 절차표 'Keyboard / mouse'·'Screenshot' 행)로 마우스 인터랙션을 직접 수행하며 스크린샷을 촬영하고, Claude가 스크린샷을 직접 Read하여 시각적으로 확인한다.
 문제 발견 시 코드를 수정하고 재검증을 반복한다. 모든 항목이 통과할 때까지 반복한다.
 
 **이 단계에서 절대로 superpowers:brainstorming을 사용하지 않는다.**
@@ -79,41 +79,19 @@ SPA fallback을 유지하며 file://로 바꾸지 않는다. hash mode도 Step 4
 
 ## 실행 방법
 
-각 항목마다 Playwright 스크립트를 작성하여 실행한다:
+각 항목마다 브라우저 자동화 절차를 작성하여 실행한다 (구체 API는 docs/BROWSER-TOOLS.md 절차표):
 
-```javascript
-// playwright-mouse-[항목명].js
-const { chromium } = require('playwright');
+1. Step 45의 검증된 base URL + 해당 화면 canonical path(`HARNESS50_QA_URL`, 없으면 오류로 중단)로 페이지 열기
+2. 인터랙션 전 스크린샷 → `step_archive/screenshots/mouse/[항목]-before.png`
+3. 마우스 인터랙션: hover / click / 우클릭 / 더블클릭 / drag & drop / 스크롤(wheel)
+4. 인터랙션 후 스크린샷 → `step_archive/screenshots/mouse/[항목]-after.png`
+5. 탭/컨텍스트 닫기
 
-(async () => {
-  const browser = await chromium.launch();
-  const page = await browser.newPage();
-  // Step 45의 검증된 base URL + 해당 화면 canonical path로 설정한다.
-  const targetUrl = process.env.HARNESS50_QA_URL;
-  if (!targetUrl) throw new Error('HARNESS50_QA_URL must reuse the Step 45 serving context');
-  await page.goto(targetUrl);
-
-  // 인터랙션 전 스크린샷
-  await page.screenshot({ path: 'step_archive/screenshots/mouse/[항목]-before.png', fullPage: true });
-
-  // 마우스 인터랙션 수행 예시
-  await page.hover('[selector]');                      // hover
-  // await page.click('[selector]');                   // click
-  // await page.click('[selector]', { button: 'right' }); // right click
-  // await page.dblclick('[selector]');                // double click
-  // await page.dragAndDrop('[from]', '[to]');         // drag & drop
-  // await page.mouse.wheel(0, 300);                  // scroll
-
-  // 인터랙션 후 스크린샷
-  await page.screenshot({ path: 'step_archive/screenshots/mouse/[항목]-after.png', fullPage: true });
-
-  await browser.close();
-})();
-```
+백엔드별 호출은 docs/BROWSER-TOOLS.md 절차표('Keyboard / mouse'·'Screenshot' 행)를 따른다. Aside CLI에서 drag & drop은 `page.dragAndDrop`이 실측되지 않았으므로 `page.mouse.move/down/up`으로 조합하고, 스크린샷은 실패 시 재시도(타임아웃 4000/8000/8000 ms) 뒤 세션 `./artifacts/`에 저장되므로 `step_archive/`로 복사한다.
 
 ## 검증 절차 (항목마다 반복)
 
-1. Playwright 스크립트 실행 → 스크린샷 저장
+1. 브라우저 자동화 절차 실행 → 스크린샷 저장
 2. Claude가 스크린샷을 직접 Read하여 시각적으로 확인
 3. **문제 발견 시:**
    - 어떤 요소가 어떻게 잘못 동작하는지 구체적으로 기록
